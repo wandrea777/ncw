@@ -1,0 +1,218 @@
+# Compliance-register NCW
+#
+# Elke verplichting heeft één of meer controls:
+#   type: auto       → wordt bij elke commit en dagelijks gecontroleerd door compliance-check.mjs (check = naam van de check)
+#   type: handmatig  → een mens controleert dit; `laatstGecontroleerd` + `interval` (dagen) bepalen wanneer het weer moet.
+#                      Bij een release faalt de build als een handmatige control verlopen of nooit gedaan is.
+#
+# ⚖️ = juridische inschatting die door een jurist bevestigd moet worden (control JUR-*).
+# Peildatum inhoud: 2026-10-12.
+
+product:
+  naam: "NCW Box 3-rekenhulp"
+  fase: 0  # 0 = read-only web-tool, 1 = wallet
+  beschrijving: "Browser-tool die op basis van publieke adressen het werkelijk rendement in box 3 berekent. Geen sleutels, geen opslag, geen server."
+
+verplichtingen:
+  - id: MICA
+    wet: "MiCA, Verordening (EU) 2023/1114"
+    geldt: "nee"
+    waarom: "Geen cryptodienst (geen bewaring, ruil, orderdoorgifte, advies of portefeuillebeheer). Read-only rekenhulp. ⚖️"
+    controls:
+      - id: MICA-1
+        type: auto
+        check: geen-sleutelbibliotheken
+        beschrijving: "De web-app bevat geen bibliotheken voor sleutelbeheer of ondertekening (fase 0)."
+      - id: MICA-2
+        type: handmatig
+        beschrijving: "Juridische toets van de perimeter vóórdat een functie wordt toegevoegd die transacties maakt, doorstuurt of daaraan verdient."
+        interval: 365
+        laatstGecontroleerd: null
+
+  - id: WWFT
+    wet: "Wwft / AMLR, Verordening (EU) 2024/1624 (van toepassing vanaf 10-07-2027)"
+    geldt: "nee"
+    waarom: "Geen meldingsplichtige instelling; geen bewaring of wisseldienst."
+    controls:
+      - id: WWFT-1
+        type: auto
+        check: geen-sleutelbibliotheken
+        beschrijving: "Zelfde technische borging als MICA-1."
+
+  - id: DAC8
+    wet: "DAC8, Richtlijn (EU) 2023/2226"
+    geldt: "nee"
+    waarom: "Rapportageplicht rust op cryptodienstverleners; wij zijn dat niet."
+    controls: []
+
+  - id: SANCTIES
+    wet: "Sanctiewet 1977 en EU-sanctieverordeningen"
+    geldt: "ja"
+    waarom: "Geldt voor iedereen. Risico laag: we stellen geen middelen of diensten ter beschikking die waarde overdragen."
+    controls:
+      - id: SANC-1
+        type: handmatig
+        beschrijving: "Jaarlijks nagaan of de dienst geen functies heeft gekregen die waarde overdragen of anonimiseren (mixing)."
+        interval: 365
+        laatstGecontroleerd: null
+
+  - id: CRA
+    wet: "Cyber Resilience Act, Verordening (EU) 2024/2847 (meldplicht vanaf 11-09-2026, volledig vanaf 11-12-2027)"
+    geldt: "vrijwillig"
+    waarom: >
+      Een pure web-app (SaaS) valt waarschijnlijk buiten de CRA ⚖️. De mobiele wallet (fase 1) valt er wél onder.
+      We passen de meldplicht en de beveiligingseisen nu al vrijwillig toe: dat kost weinig en levert bewijs op voor productaansprakelijkheid.
+    controls:
+      - id: CRA-1
+        type: auto
+        check: security-txt
+        beschrijving: "security.txt (RFC 9116) aanwezig, met contact en geldige Expires (< 1 jaar vooruit)."
+      - id: CRA-2
+        type: auto
+        check: open-incidenten
+        beschrijving: "Geen meldtermijnen (24u / 72u / eindrapport) verstreken bij open incidenten."
+      - id: CRA-3
+        type: auto
+        check: sbom
+        beschrijving: "SBOM (CycloneDX) wordt bij elke build en release gegenereerd (CI-stap)."
+      - id: CRA-4
+        type: auto
+        check: vuln-watch
+        beschrijving: "Dagelijkse scan van afhankelijkheden tegen OSV en de CISA-lijst van actief misbruikte kwetsbaarheden (KEV)."
+      - id: CRA-5
+        type: handmatig
+        beschrijving: "Account bij het ENISA Single Reporting Platform en contact met de CSIRT (NCSC) geregeld, zodat melden binnen 24 uur kan."
+        interval: 365
+        laatstGecontroleerd: null
+      - id: CRA-6
+        type: handmatig
+        beschrijving: "Fase 1: technische documentatie (bijlage VII), ondersteuningsperiode en EU-conformiteitsverklaring vóór 11-12-2027."
+        interval: 180
+        laatstGecontroleerd: null
+
+  - id: PLD
+    wet: "Richtlijn productaansprakelijkheid (EU) 2024/2853, NL-implementatie wetsvoorstel 36 906 (vanaf 09-12-2026)"
+    geldt: "ja"
+    waarom: >
+      Software is een product, ook als SaaS. Aansprakelijkheid tegenover consumenten kan niet contractueel worden uitgesloten.
+      Fase 0 kan geen data vernietigen of letsel veroorzaken; een rekenfout is zuivere vermogensschade, die waarschijnlijk buiten de PLD valt ⚖️.
+      Het risico ligt dan bij het contractenrecht en de onrechtmatige daad. Dat beperken we met juistheid, bewijs en redelijke voorwaarden.
+    controls:
+      - id: PLD-1
+        type: auto
+        check: tests
+        beschrijving: "Alle rekenregels hebben tests; de build faalt bij een falende test (CI-stap)."
+      - id: PLD-2
+        type: auto
+        check: bewijsbundel
+        beschrijving: "Bij elke release wordt een bewijsbundel (commit, tests, SBOM, compliance-rapport) als release-asset bewaard, 10 jaar."
+      - id: PLD-3
+        type: auto
+        check: noodstop
+        beschrijving: "Noodstop via /status.json aanwezig, zodat een gebrek direct kan worden afgeschermd."
+      - id: PLD-4
+        type: handmatig
+        beschrijving: "Bedrijfs- en cyberaansprakelijkheidsverzekering afgesloten en gecontroleerd op uitsluitingen voor crypto."
+        interval: 365
+        laatstGecontroleerd: null
+
+  - id: FISCAAL
+    wet: "Wet IB 2001 box 3, Wet tegenbewijsregeling box 3"
+    geldt: "ja (juistheid van de rekenhulp)"
+    waarom: "Een onjuiste berekening is het grootste aansprakelijkheidsrisico van fase 0."
+    controls:
+      - id: FIS-1
+        type: auto
+        check: box3-parameters
+        beschrijving: "Parameters voor elk selecteerbaar jaar aanwezig met bron; bij een release moeten alle jaren geverifieerd zijn; het vorige kalenderjaar moet aanwezig zijn."
+      - id: FIS-2
+        type: handmatig
+        beschrijving: "Rekenregels en een steekproef van uitkomsten jaarlijks laten controleren door een belastingadviseur (vóór 1 februari)."
+        interval: 365
+        laatstGecontroleerd: null
+
+  - id: AVG
+    wet: "AVG, Verordening (EU) 2016/679"
+    geldt: "ja"
+    waarom: "IP-adressen en walletadressen kunnen persoonsgegevens zijn. Wij verwerken zelf niets, maar de browser praat met derden."
+    controls:
+      - id: AVG-1
+        type: auto
+        check: derde-partijen
+        beschrijving: "De hosts in de code, de CSP (connect-src) en de privacyverklaring (third-parties.json) zijn exact gelijk."
+      - id: AVG-2
+        type: auto
+        check: geen-trackers
+        beschrijving: "De build bevat geen analytics of trackers."
+      - id: AVG-3
+        type: handmatig
+        beschrijving: "Privacyverklaring jaarlijks herzien en verwerkersovereenkomst met de hostingpartij gecontroleerd."
+        interval: 365
+        laatstGecontroleerd: null
+
+  - id: COOKIES
+    wet: "Telecommunicatiewet art. 11.7a (ePrivacy)"
+    geldt: "ja"
+    waarom: "Geen cookie-banner nodig zolang we niets op het apparaat opslaan."
+    controls:
+      - id: COOK-1
+        type: auto
+        check: geen-opslag
+        beschrijving: "Geen document.cookie, localStorage, sessionStorage of IndexedDB in de broncode."
+
+  - id: CONSUMENT
+    wet: "Burgerlijk Wetboek boek 6 en 7 (algemene voorwaarden, digitale inhoud), Wet handhaving consumentenbescherming"
+    geldt: "ja"
+    waarom: "Voorwaarden moeten redelijk zijn; uitsluiting voor opzet of bewuste roekeloosheid is nietig."
+    controls:
+      - id: CONS-1
+        type: auto
+        check: placeholders
+        beschrijving: "Geen CONCEPT-markeringen of [PLACEHOLDERS] in juridische pagina's bij een release."
+      - id: CONS-2
+        type: handmatig
+        beschrijving: "Voorwaarden en privacyverklaring getoetst door een jurist."
+        interval: 730
+        laatstGecontroleerd: null
+
+  - id: RECLAME
+    wet: "Oneerlijke handelspraktijken (art. 6:193a e.v. BW)"
+    geldt: "ja"
+    waarom: "Geen misleidende beloftes over veiligheid of rendement."
+    controls:
+      - id: RECL-1
+        type: auto
+        check: copy-lint
+        beschrijving: "Verboden claims (\"gegarandeerd\", \"risicovrij\", \"100% veilig\", ...) komen niet voor in de app-teksten."
+
+  - id: EAA
+    wet: "Europese toegankelijkheidswet (Richtlijn (EU) 2019/882)"
+    geldt: "nee (micro-onderneming die diensten levert)"
+    waarom: "Micro-ondernemingen zijn uitgezonderd voor diensten. We volgen WCAG wel als basis."
+    controls:
+      - id: EAA-1
+        type: handmatig
+        beschrijving: "Jaarlijkse toegankelijkheidscheck (toetsenbord, contrast, schermlezer) en controle of we nog micro-onderneming zijn."
+        interval: 365
+        laatstGecontroleerd: null
+
+  - id: LICENTIES
+    wet: "Auteursrecht (open-source licenties)"
+    geldt: "ja"
+    waarom: "Alleen licenties die we mogen meeleveren zonder onze code te hoeven openbaren."
+    controls:
+      - id: LIC-1
+        type: auto
+        check: licenties
+        beschrijving: "Alle meegeleverde afhankelijkheden hebben een toegestane licentie."
+
+  - id: ONDERNEMING
+    wet: "Handelsregisterwet, Wet OB (btw), Merkenrecht (BVIE)"
+    geldt: "ja"
+    waarom: "Inschrijving, btw en een naam die geen merken schendt."
+    controls:
+      - id: OND-1
+        type: handmatig
+        beschrijving: "KvK-inschrijving, btw-status (KOR) en merkencheck bij BOIP voor de productnaam."
+        interval: 365
+        laatstGecontroleerd: null

@@ -1,0 +1,33 @@
+# Elk uur: bewaakt de CRA-meldtermijnen van open incidenten.
+name: Incident clock
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  clock:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: status
+        run: |
+          set +e
+          node compliance/scripts/incident.mjs status --binnen 12 > status.txt 2>&1
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+          cat status.txt
+      - if: steps.status.outputs.code == '1' || steps.status.outputs.code == '3'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          CODE: ${{ steps.status.outputs.code }}
+        with:
+          script: |
+            const fs = require("fs");
+            const title = process.env.CODE === "1" ? "❌ CRA-meldtermijn VERSTREKEN" : "⏰ CRA-meldtermijn verloopt binnen 12 uur";
+            await github.rest.issues.create({ ...context.repo, title, body: "```\n" + fs.readFileSync("status.txt", "utf8") + "\n```", labels: ["CRA-incident"] });

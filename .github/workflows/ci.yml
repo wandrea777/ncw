@@ -1,0 +1,52 @@
+# Bij elke push en pull request: alle tests (ook tegen echte PostgreSQL), typecheck, build,
+# compliance, documentatie-check en SBOM. Zet "CI" als verplichte check op main.
+# Actions zijn vastgepind op commit-SHA (Dependabot werkt ze bij).
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ncw
+          POSTGRES_PASSWORD: ncw
+          POSTGRES_DB: ncw_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ncw" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Tests (PGlite)
+        run: npm test
+      - name: API-tests tegen echte PostgreSQL
+        run: npm test -w @ncw/api
+        env:
+          TEST_DATABASE_URL: postgres://ncw:ncw@localhost:5432/ncw_test?sslmode=disable
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm run compliance
+      - name: Documentatie bijgewerkt?
+        if: github.event_name == 'pull_request'
+        run: node scripts/docs-check.mjs origin/${{ github.base_ref }}
+      - run: npm run sbom
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-bewijs-${{ github.sha }}
+          path: |
+            sbom.cdx.json
+            compliance/reports/
+          retention-days: 90

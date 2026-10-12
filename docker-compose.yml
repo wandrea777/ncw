@@ -1,0 +1,15 @@
+# Lokale PostgreSQL die zich gedraagt als productie (optioneel; zonder Docker gebruikt de API PGlite).
+# Start: docker compose up -d   → zet DATABASE_URL=postgres://ncw:ncw@localhost:5432/ncw?sslmode=disable
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ncw
+      POSTGRES_PASSWORD: ncw
+      POSTGRES_DB: ncw
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

@@ -1,0 +1,6 @@
+#!/bin/sh
+# Weigert commits die een AI-assistent als (co-)auteur vermelden. De eigenaar is de enige auteur.
+if grep -qiE "co-authored-by:.*(claude|anthropic)|generated with \[?claude" "$1"; then
+  echo "❌ Commitbericht vermeldt Claude/Anthropic als auteur. Verwijder die regel." >&2
+  exit 1
+fi

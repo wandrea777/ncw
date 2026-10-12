@@ -1,0 +1,23 @@
+[
+  {
+    "host": "https://mempool.space",
+    "partij": "mempool.space (The Mempool Open Source Project)",
+    "doel": "Ophalen van publieke Bitcoin-transacties en saldi",
+    "gegevens": "Het Bitcoin-adres dat je invoert en je IP-adres (technisch noodzakelijk voor elk internetverzoek)",
+    "doorgifteBuitenEER": "Mogelijk; zie het privacybeleid van de partij"
+  },
+  {
+    "host": "https://eth.blockscout.com",
+    "partij": "Blockscout",
+    "doel": "Ophalen van publieke Ethereum-saldogeschiedenis",
+    "gegevens": "Het Ethereum-adres dat je invoert en je IP-adres",
+    "doorgifteBuitenEER": "Mogelijk; zie het privacybeleid van de partij"
+  },
+  {
+    "host": "https://data-api.binance.vision",
+    "partij": "Binance (publieke marktdata)",
+    "doel": "Ophalen van historische BTC/EUR- en ETH/EUR-dagkoersen",
+    "gegevens": "Alleen je IP-adres en het opgevraagde jaar; géén adressen",
+    "doorgifteBuitenEER": "Mogelijk; zie het privacybeleid van de partij"
+  }
+]

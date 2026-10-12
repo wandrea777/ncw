@@ -1,0 +1,95 @@
+# Dagelijks: kwetsbaarhedenscan (OSV + CISA KEV) en volledige compliance-check.
+# Twee jobs, zodat code van derden (npm-pakketten) nooit draait met schrijfrechten:
+#   scan    → alleen lezen; installeert, bouwt en scant; levert resultaten als artifact
+#   rapport → schrijfrechten; draait GEEN npm-code; maakt issue en (bij actief misbruik) een PR met het CRA-incident
+name: Security watch
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      vuln: ${{ steps.vuln.outputs.code }}
+      comp: ${{ steps.comp.outputs.code }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - id: vuln
+        run: |
+          set +e
+          npm run --silent vuln-watch > vuln.txt 2>&1
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+          cat vuln.txt
+      - id: comp
+        run: |
+          set +e
+          npm run build > /dev/null 2>&1
+          npm run --silent compliance:release > comp.txt 2>&1
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+          cat comp.txt
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: security-watch
+          path: |
+            vuln.txt
+            comp.txt
+            compliance/incidents/
+          retention-days: 30
+
+  rapport:
+    needs: scan
+    if: needs.scan.outputs.vuln != '0' || needs.scan.outputs.comp != '0'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: security-watch
+          path: resultaat
+      - name: CRA-incident als pull request
+        if: needs.scan.outputs.vuln == '2'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          branch="cra-incident-$(date -u +%Y%m%d%H%M)"
+          git config user.name "ncw-compliance-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout -b "$branch"
+          cp -r resultaat/compliance/incidents/. compliance/incidents/
+          git add compliance/incidents
+          git commit -m "CRA-incident automatisch aangemaakt door security watch"
+          git push origin "$branch"
+          gh pr create --title "🚨 CRA-incident: actief misbruikte kwetsbaarheid" --body "Zie compliance/README.md §4. Meldklok loopt." --head "$branch"
+      - name: Issue aanmaken
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          VULN: ${{ needs.scan.outputs.vuln }}
+        with:
+          script: |
+            const fs = require("fs");
+            const urgent = process.env.VULN === "2";
+            const title = urgent
+              ? "🚨 CRA: actief misbruikte kwetsbaarheid, early warning binnen 24 uur"
+              : `Security/compliance-bevindingen ${new Date().toISOString().slice(0, 10)}`;
+            const body = [
+              urgent ? "**Er loopt een CRA-meldtermijn. Voer `npm run incident -- status` uit en volg compliance/README.md §4.**\n" : "",
+              "## Kwetsbaarheden\n```\n" + fs.readFileSync("resultaat/vuln.txt", "utf8").slice(-6000) + "\n```",
+              "## Compliance (releasemodus)\n```\n" + fs.readFileSync("resultaat/comp.txt", "utf8").slice(-6000) + "\n```",
+            ].join("\n");
+            await github.rest.issues.create({ ...context.repo, title, body, labels: urgent ? ["CRA-incident", "security"] : ["compliance"] });

@@ -1,0 +1,58 @@
+# Release = ondertekende tag "v*" op een commit die op main staat. Strengste compliance-check,
+# bewijsbundel (10 jaar bewaren i.v.m. productaansprakelijkheid) en deploy via de beschermde
+# environment "production" (vereist handmatige goedkeuring; in te stellen in GitHub).
+name: Release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Tag moet op main staan
+        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm test 2>&1 | tee test-uitvoer.txt
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm run compliance:release
+      - run: npm run sbom
+      - name: Bewijsbundel samenstellen
+        run: |
+          mkdir -p bewijs
+          cp test-uitvoer.txt sbom.cdx.json package-lock.json compliance/register.yaml compliance/third-parties.json bewijs/
+          cp compliance/reports/compliance-*.md bewijs/
+          cp -r compliance/incidents docs/qa bewijs/
+          (cd apps/web/dist && find . -type f -exec sha256sum {} \; | sort -k2) > bewijs/site-hashes.txt
+          {
+            echo "tag: ${GITHUB_REF_NAME}"
+            echo "commit: ${GITHUB_SHA}"
+            echo "datum: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "node: $(node -v)"
+          } > bewijs/MANIFEST.txt
+          zip -r "bewijs-${GITHUB_REF_NAME}.zip" bewijs
+          (cd apps/web/dist && zip -r "../../../site-${GITHUB_REF_NAME}.zip" .)
+      - name: GitHub Release met bewijs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" "bewijs-${GITHUB_REF_NAME}.zip" "site-${GITHUB_REF_NAME}.zip" --title "$GITHUB_REF_NAME" --generate-notes
+      - name: Deploy web naar Cloudflare Pages
+        if: ${{ vars.CF_PAGES_PROJECT != '' }}
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy apps/web/dist --project-name=${{ vars.CF_PAGES_PROJECT }} --branch=main
