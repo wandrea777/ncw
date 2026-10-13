@@ -24,7 +24,7 @@ Besluit: [ADR-0011](../adr/0011-web-hosting-vercel.md). Headers en build staan i
 |---|---|---|
 | Secret | `VERCEL_TOKEN` | het token uit stap 5 |
 | Secret | `VERCEL_AUTOMATION_BYPASS_SECRET` | het geheim uit stap 7 |
-| Variabele | `ATTESTATION` | `off` zolang de repo privé is (zonder GitHub Enterprise), daarna weghalen |
+| Variabele | `ATTESTATION` | Niet zetten. De repo is openbaar, dus attestaties werken. Alleen `off` als de repo ooit weer privé wordt |
 | Variabele | `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | te vinden onder Project → Settings → General |
 | Variabele | `SITE_URL` | bijvoorbeeld `https://kern-xxx.vercel.app`; later je eigen domein |
 
@@ -32,7 +32,7 @@ Zet op beide environments een **deployment branch policy**:
 - `production`: alleen tags `v*`, met verplichte reviewer (jij);
 - `noodstop`: alleen `main`, zonder wachttijd.
 
-Anders kan een workflow vanaf een willekeurige branch de token gebruiken. Zet daarnaast een **tag-ruleset** op `v*`: alleen jij mag tags maken, ondertekend, en niemand mag ze verwijderen of verplaatsen.
+Anders kan een workflow vanaf een willekeurige branch de token gebruiken. Zet in de repo-instellingen (de repo is openbaar) ook **secret scanning** en **push protection** aan, en **branch protection** op `main` (CI verplicht). Zet daarnaast een **tag-ruleset** op `v*`: alleen jij mag tags maken, ondertekend, en niemand mag ze verwijderen of verplaatsen.
 
 ## Release (productie)
 
