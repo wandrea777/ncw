@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "-w", "@ncw/web", "--", "--port", "5188", "--strictPort"],
       "port": 5188
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "-w", "@ncw/api"],
+      "port": 8787
     }
   ]
 }

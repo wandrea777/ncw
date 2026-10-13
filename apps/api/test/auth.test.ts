@@ -12,7 +12,7 @@ describe("passkey-authenticatie", () => {
     expect(me.body.user.id).toBe(user.id);
     const out = await c.post("/v1/auth/logout");
     expect(out.status).toBe(204);
-    expect(out.headers.get("clear-site-data")).toContain("cookies");
+    expect(out.headers.get("clear-site-data")).toBe('"cookies"');
     // Een bewaarde (gestolen) cookie werkt na uitloggen niet meer.
     c.cookie = stolen;
     expect((await c.get("/v1/me")).status).toBe(401);
@@ -35,6 +35,28 @@ describe("passkey-authenticatie", () => {
     const b = await registerUser(app, "Bram");
     await db.query("UPDATE sessions SET expires_at = now() - interval '1 second' WHERE user_id = $1", [b.user.id]);
     expect((await b.c.get("/v1/me")).status).toBe(401);
+  });
+
+  it("een sessiecontrole met x-kern-session-check verlengt de inactiviteitstermijn niet; gewone verzoeken wel", async () => {
+    const { app, db } = await setup();
+    const { c } = await registerUser(app, "Anna");
+    await db.query("UPDATE sessions SET idle_expires_at = now() + interval '5 minutes'");
+    const idle = async () => (await db.query<{ t: Date }>("SELECT idle_expires_at AS t FROM sessions"))[0]!.t.getTime();
+    const before = await idle();
+    const check = await app.request("/v1/me", { headers: { cookie: c.cookie, "x-kern-session-check": "1" } });
+    expect(check.status).toBe(200);
+    expect(await idle()).toBe(before);
+    // Alleen voor GET: een wijzigend verzoek met de header verlengt gewoon (en valt onder de CSRF-regels).
+    expect((await c.get("/v1/me")).status).toBe(200);
+    expect(await idle()).toBeGreaterThan(before);
+  });
+
+  it("een sessiecontrole op een verlopen sessie geeft 401", async () => {
+    const { app, db } = await setup();
+    const { c } = await registerUser(app, "Anna");
+    await db.query("UPDATE sessions SET idle_expires_at = now() - interval '1 second'");
+    const res = await app.request("/v1/me", { headers: { cookie: c.cookie, "x-kern-session-check": "1" } });
+    expect(res.status).toBe(401);
   });
 
   it("logt in met een bestaande passkey en weigert een onbekende", async () => {

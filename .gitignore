@@ -4,3 +4,14 @@ dist/
 *.log
 sbom.cdx.json
 compliance/reports/
+
+# Referentie-ontwerp (v0). Niet uitgeleverd; bevat eigen dependencies en placeholder-teksten.
+kern-wallet-development-test-ui/
+
+# Vercel CLI-uitvoer
+.vercel/
+
+# Lokale configuratie en sleutels: nooit committen (alleen .env.example)
+.env
+.env.*
+!.env.example

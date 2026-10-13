@@ -3,16 +3,32 @@ export function Beveiliging() {
     <article className="card prose">
       <h1>Beveiliging en kwetsbaarheden melden</h1>
 
-      <h2>Hoe de rekenhulp is beveiligd</h2>
+      <p className="badge badge-warn">CONCEPT: het meldadres wordt ingevuld vóór livegang</p>
+
+      <h2>Hoe KERN is beveiligd</h2>
       <ul>
-        <li>Je voert alleen publieke adressen in. Vul nooit je herstelzin of privésleutel in, nergens.</li>
-        <li>Alles draait in je browser. Er is geen server die jouw gegevens ontvangt.</li>
-        <li>Een strikte Content-Security-Policy bepaalt met welke partijen de browser mag praten (zie de privacyverklaring).</li>
+        <li>
+          <strong>Geen sleutels op het web.</strong> De web-wallet is alleen-lezen: je volgt publieke adressen. KERN vraagt,
+          ontvangt en bewaart nooit een herstelzin of privésleutel. Plakt iemand er per ongeluk een in, dan waarschuwt de app
+          en wordt de invoer gewist.
+        </li>
+        <li>
+          <strong>Inloggen met een passkey.</strong> Geen wachtwoord en geen sms. Een passkey is gekoppeld aan ons domein en
+          daardoor bestand tegen phishing. Je passkey geeft toegang tot je account, nooit tot je geld.
+        </li>
+        <li>
+          <strong>Je adressen blijven op je apparaat.</strong> Onze server kent alleen je naam, je passkeys en je sessies. De
+          adressen die je volgt staan alleen in je browser; met "Uitloggen en dit apparaat wissen" verwijder je ze.
+        </li>
+        <li>
+          Saldi en koersen haalt je browser rechtstreeks op bij de partijen in de privacyverklaring. Een strikt
+          beveiligingsbeleid in de browser (Content-Security-Policy) staat geen andere verbindingen toe.
+        </li>
         <li>Alle code wordt bij elke wijziging automatisch getest en gescand op bekende kwetsbaarheden.</li>
-        <li>Bij een ernstig probleem kunnen we de rekenhulp direct uitschakelen.</li>
+        <li>Bij een ernstig probleem kunnen we de app direct uitschakelen (noodstop).</li>
       </ul>
 
-      <h2>Coordinated Vulnerability Disclosure</h2>
+      <h2>Kwetsbaarheden melden (Coordinated Vulnerability Disclosure)</h2>
       <p>
         Heb je een kwetsbaarheid gevonden? Meld het ons via <strong>[security@DOMEIN]</strong>, zie ook{" "}
         <a href="/.well-known/security.txt">security.txt</a>. Wij vragen je:

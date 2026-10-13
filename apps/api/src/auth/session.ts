@@ -30,17 +30,31 @@ export async function createSession(db: Db, cfg: Config, c: Context, userId: str
   });
 }
 
-/** Valideert de sessie (absolute én inactiviteitstermijn) en verlengt de inactiviteitstermijn. */
+/** Header waarmee de web-app de sessie controleert zonder hem te verlengen (achtergrondcontrole, geen activiteit). */
+export const SESSION_CHECK_HEADER = "x-kern-session-check";
+
+/**
+ * Valideert de sessie (absolute én inactiviteitstermijn) en verlengt de inactiviteitstermijn.
+ * Uitzondering: een GET met `x-kern-session-check: 1` verlengt niet. Anders zou de periodieke controle van de
+ * web-app de sessie eeuwig levend houden zolang een tabblad open staat (ADR-0005: verlopen na inactiviteit).
+ */
 export function requireSession(db: Db, cfg: Config): MiddlewareHandler<AppEnv> {
   return async (c, next) => {
     const token = getCookie(c, cookieName(cfg));
     if (!token || token.length > 128) throw unauthorized();
-    const rows = await db.query<{ id: string; user_id: string }>(
-      `UPDATE sessions SET idle_expires_at = $2
-       WHERE token_hash = $1 AND revoked_at IS NULL AND expires_at > now() AND idle_expires_at > now()
-       RETURNING id, user_id`,
-      [sha256(token), new Date(Date.now() + cfg.sessionIdleMinutes * 60_000)],
-    );
+    const passive = c.req.method === "GET" && c.req.header(SESSION_CHECK_HEADER) === "1";
+    const rows = passive
+      ? await db.query<{ id: string; user_id: string }>(
+          `SELECT id, user_id FROM sessions
+           WHERE token_hash = $1 AND revoked_at IS NULL AND expires_at > now() AND idle_expires_at > now()`,
+          [sha256(token)],
+        )
+      : await db.query<{ id: string; user_id: string }>(
+          `UPDATE sessions SET idle_expires_at = $2
+           WHERE token_hash = $1 AND revoked_at IS NULL AND expires_at > now() AND idle_expires_at > now()
+           RETURNING id, user_id`,
+          [sha256(token), new Date(Date.now() + cfg.sessionIdleMinutes * 60_000)],
+        );
     const s = rows[0];
     if (!s) throw unauthorized();
     c.set("user", { userId: s.user_id, sessionId: s.id });

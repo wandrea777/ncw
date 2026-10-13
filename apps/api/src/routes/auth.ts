@@ -141,10 +141,18 @@ export function registerAuthRoutes(app: OpenAPIHono<AppEnv>, { db, cfg, passkeys
   for (const p of ["/v1/auth/logout", "/v1/auth/step-up/*", "/v1/me", "/v1/me/*"]) app.use(p, requireSession(db, cfg));
 
   app.openapi(
-    createRoute({ method: "post", path: "/v1/auth/logout", tags: ["auth"], responses: { 204: { description: "Uitgelogd" }, ...errorResponses } }),
+    createRoute({
+      method: "post",
+      path: "/v1/auth/logout",
+      tags: ["auth"],
+      summary: "Uitloggen. Beëindigt de sessie en wist de sessiecookie (Clear-Site-Data: \"cookies\"); lokale opslag blijft staan.",
+      responses: { 204: { description: "Uitgelogd" }, ...errorResponses },
+    }),
     async (c) => {
       await revokeSession(db, cfg, c, c.get("user").sessionId);
-      c.header("Clear-Site-Data", '"cookies", "storage"');
+      // Alleen cookies: de web-app bewaart gevolgde publieke adressen lokaal (ADR-0013). Wissen van het apparaat is
+      // een aparte, expliciete keuze van de gebruiker ("Uitloggen en dit apparaat wissen").
+      c.header("Clear-Site-Data", '"cookies"');
       return c.body(null, 204);
     },
   );

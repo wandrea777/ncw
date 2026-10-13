@@ -11,6 +11,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
 import { ROOT, read, exists, walk, loadIncidents, incidentStatus } from "./lib.mjs";
+import { diffHeaders, lintHeadersFile, lintVercelConfig, parseHeadersFile, vercelHeaders } from "./headers.mjs";
 
 const RELEASE = process.argv.includes("--release");
 const results = []; // { check, level: "ok"|"warn"|"fail", msg }
@@ -44,10 +45,27 @@ checks["derde-partijen"] = () => {
   }
 };
 
+// ---------------------------------------------------------------- beveiligingsheaders op elke host (CRA-7)
+// De web-app kan op Vercel (vercel.json) en Cloudflare Pages (_headers) draaien. Beide moeten exact dezelfde
+// headers sturen, anders is de CSP-check hierboven op één van de twee hosts schijnveiligheid.
+checks["headers-gelijk"] = () => {
+  if (!exists("vercel.json")) return fail("headers-gelijk", "vercel.json ontbreekt");
+  const cfText = read("apps/web/public/_headers");
+  const vc = JSON.parse(read("vercel.json"));
+  const cf = parseHeadersFile(cfText);
+  const diffs = [...lintHeadersFile(cfText), ...lintVercelConfig(vc), ...diffHeaders(cf, vercelHeaders(vc))];
+  if (vc.git?.deploymentEnabled !== false) diffs.push("vercel.json: Git-deploys moeten uit (git.deploymentEnabled = false); productie en noodstop gaan via de workflows met een geattesteerd artefact");
+  if (!/npm run compliance/.test(vc.buildCommand ?? "")) diffs.push("vercel.json: buildCommand moet npm run compliance draaien");
+  diffs.length
+    ? fail("headers-gelijk", `Probleem in apps/web/public/_headers of vercel.json: ${diffs.join(", ")}`)
+    : ok("headers-gelijk", `Vercel en Cloudflare sturen dezelfde ${Object.keys(cf["/*"]).length} beveiligingsheaders`);
+};
+
 // ---------------------------------------------------------------- geen trackers (AVG-2)
 const TRACKERS = [
   "google-analytics", "googletagmanager", "gtag(", "facebook.net", "connect.facebook", "hotjar", "segment.io",
   "mixpanel", "amplitude.com", "clarity.ms", "doubleclick", "sentry.io", "posthog", "plausible.io", "matomo",
+  "@vercel/analytics", "@vercel/speed-insights", "/_vercel/insights", "va.vercel-scripts.com",
 ];
 checks["geen-trackers"] = () => {
   const files = [...walk("apps/web/src"), "apps/web/index.html", ...walk("apps/web/dist", (p) => /\.(js|html)$/.test(p))];
@@ -59,16 +77,24 @@ checks["geen-trackers"] = () => {
 // ---------------------------------------------------------------- geen opslag op apparaat (COOK-1)
 checks["geen-opslag"] = () => {
   const pats = ["document.cookie", "localStorage", "sessionStorage", "indexedDB"];
-  const hits = [...walk("apps/web/src"), ...walk("packages/core/src")].flatMap((f) =>
-    pats.filter((p) => read(f).includes(p)).map((p) => `${f}: ${p}`),
-  );
-  hits.length ? fail("geen-opslag", `${hits.join("; ")}. Opslag vereist toestemming of een strikt-noodzakelijk-analyse.`) : ok("geen-opslag", "Geen cookies of lokale opslag");
+  // Eén toegestane plek: functionele opslag van door de gebruiker toegevoegde publieke adressen en de taalkeuze
+  // (strikt noodzakelijk, Tw art. 11.7a lid 3 sub b; zie ADR-0013). Alles daarbuiten faalt.
+  const ALLOWED_STORAGE = "apps/web/src/lib/storage.ts";
+  const hits = [...walk("apps/web/src"), ...walk("packages/core/src")]
+    .filter((f) => !f.endsWith(ALLOWED_STORAGE))
+    .flatMap((f) => pats.filter((p) => read(f).includes(p)).map((p) => `${f}: ${p}`));
+  const allowed = exists(ALLOWED_STORAGE) ? read(ALLOWED_STORAGE) : "";
+  if (/document\.cookie|sessionStorage|indexedDB/.test(allowed)) hits.push(`${ALLOWED_STORAGE}: alleen localStorage is toegestaan`);
+  hits.length
+    ? fail("geen-opslag", `${hits.join("; ")}. Opslag vereist toestemming of een strikt-noodzakelijk-analyse.`)
+    : ok("geen-opslag", `Geen cookies; lokale opslag alleen in ${ALLOWED_STORAGE} (gevolgde adressen, taal)`);
 };
 
 // ---------------------------------------------------------------- copy-lint (RECL-1)
 const VERBODEN = [
   "gegarandeerd", "garantie op rendement", "risicovrij", "zonder risico", "100% veilig", "volledig veilig",
   "passief inkomen", "rijk worden", "gratis geld", "rente op je crypto", "hoog rendement", "beste rendement",
+  "veiligste", "onhackbaar", "unhackable", "safest",
 ];
 checks["copy-lint"] = () => {
   const files = [...walk("apps/web/src", (p) => /\.(tsx?|json|html|css)$/.test(p)), "apps/web/index.html"];

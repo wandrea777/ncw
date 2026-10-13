@@ -63,7 +63,10 @@ De versleuteling gebeurt in de client met een organisatiesleutel die per lid wor
 | API | Hono + zod-openapi, REST `/v1`, OpenAPI 3.1 | [ADR-0003](../adr/0003-api-hono-openapi.md) |
 | Authenticatie | Passkeys (WebAuthn), sessies in de database | [ADR-0005](../adr/0005-passkeys-only.md) |
 | Auditlog | Hash-keten per organisatie, append-only via triggers | [ADR-0006](../adr/0006-auditlog-hash-keten.md) |
-| Hosting | EU (voorstel) | [ADR-0007](../adr/0007-hosting-eu.md) |
+| Hosting API en database | EU (voorstel) | [ADR-0007](../adr/0007-hosting-eu.md) |
+| Hosting web-app | Vercel, met Cloudflare Pages als uitwijk | [ADR-0011](../adr/0011-web-hosting-vercel.md) |
+| Sleutels per platform | Web nooit; app via Wallet Core native | [ADR-0012](../adr/0012-sleutelbeheer-per-platform.md) |
+| Web-wallet | v0-ontwerp (Vite), passkey-account via de API, data via `@ncw/core` in de browser, adressen alleen lokaal | [ADR-0013](../adr/0013-web-wallet-frontend.md) |
 
 ## Integraties (strategie)
 
@@ -72,7 +75,7 @@ De versleuteling gebeurt in de client met een organisatiesleutel die per lid wor
 | **Blockchaindata** | In de client (nu: publieke explorers; later: eigen Bitcoin-node + Electrum-server in de EU) | Als de server adressen opvraagt, kent hij ze. Dat breekt zero-knowledge. |
 | **Hardware wallets** (Ledger, Trezor, Coldcard, BitBox) | In de client via WebHID/WebUSB of PSBT-bestanden/QR | Sleutels verlaten het apparaat nooit |
 | **Boekhouding** (Exact Online, Moneybird, Twinfield, e-Boekhouden) | Export vanuit de client (CSV/API) met toestemming van de gebruiker | Ondernemers moeten crypto op de balans van de BV verantwoorden; groene inkomstenbron |
-| **Fiat on/off-ramp** (partner met MiCA-vergunning) | Doorverwijzing + webhook (gesigneerd) | Partner is de gereguleerde partij |
+| **Fiat on-ramp** (partner met MiCA-vergunning) | Doorverwijzing: een link die in de browser wordt gemaakt; geen webhook, de server ziet niets (ADR-0014) | De partner is de gereguleerde partij |
 | **Notificaties** (e-mail/push) | Server stuurt alleen "er wacht een goedkeuring" zonder inhoud | Geen gevoelige data in mail |
 
 ## Schaal en beschikbaarheid (nu bewust eenvoudig)

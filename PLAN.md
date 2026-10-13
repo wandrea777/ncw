@@ -1,4 +1,6 @@
-# NCW: Nederlandse non-custodial wallet, businessplan en bouwplan
+# KERN (werktitel NCW): Nederlandse non-custodial wallet, businessplan en bouwplan
+
+> **Update 13 oktober 2026:** het bedrijf en de wallet heten **KERN** ([ADR-0010](docs/adr/0010-naam-kern.md)). De web-app draait voorlopig op Vercel ([ADR-0011](docs/adr/0011-web-hosting-vercel.md)); let op: het Hobby-plan is niet-commercieel. Bitcoin én EVM, sleutels nooit op het web ([ADR-0012](docs/adr/0012-sleutelbeheer-per-platform.md)).
 
 > **Update 12 oktober 2026:** de doelgroep is aangescherpt naar **ondernemers met grote crypto-vermogens** (zakelijke non-custodial multisig-kluis met abonnement). Zie [ADR-0008](docs/adr/0008-doelgroep-ondernemers.md) en [docs/product/zakelijk.md](docs/product/zakelijk.md). De onderstaande analyse (juridisch kader, groene verdienmodellen, aansprakelijkheid) blijft geldig.
 

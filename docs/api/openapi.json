@@ -872,6 +872,7 @@
         "tags": [
           "auth"
         ],
+        "summary": "Uitloggen. Beëindigt de sessie en wist de sessiecookie (Clear-Site-Data: \"cookies\"); lokale opslag blijft staan.",
         "responses": {
           "204": {
             "description": "Uitgelogd"

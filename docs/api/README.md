@@ -3,6 +3,7 @@
 - Basis: `/v1`, JSON, cookie-sessie (`ncw_session`, in productie `__Host-ncw_session`).
 - Contract: [openapi.json](openapi.json), gegenereerd met `npm run openapi -w @ncw/api`. Open het in bijvoorbeeld Swagger Editor of Scalar.
 - Elke wijzigende request moet de header `Origin` van de web-app hebben.
+- `GET` met `x-kern-session-check: 1` controleert de sessie zonder de inactiviteitstermijn te verlengen. De web-app gebruikt dit voor de controle op de achtergrond (ADR-0013).
 
 ## Step-up (verse passkey-bevestiging)
 Gevoelige acties vereisen een veld `stepUp: { challengeId, response }`. Haal eerst een challenge op met `POST /v1/auth/step-up/options { target }` en onderteken die met de passkey. Targets:

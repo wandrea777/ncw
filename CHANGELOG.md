@@ -4,7 +4,75 @@ Alle noemenswaardige wijzigingen. Formaat: [Keep a Changelog](https://keepachang
 
 ## [Onvoltooid]
 
+### Toegevoegd (2026-10-14)
+- **Geld toevoegen: kopen via een partner met MiCA-vergunning** (ADR-0014). Het gaat om doorverwijzing; KERN komt nooit aan geld of crypto.
+  - Standaardpartner is Ramp Network (MiCA-CASP, Ierland), met vooringevuld adres. MoonPay (AFM-CASP) kan ook, maar zonder voorinvulling (zero-knowledge).
+  - De link wordt in de browser gemaakt, gevalideerd en geopend met `noopener,noreferrer`.
+  - De vergoeding aan KERN wordt duidelijk gemeld. Zonder partnersleutel toont de knop "Nog niet actief".
+  - Alleen omzetdeling uit de eigen fee van de partner, zonder opslag voor de gebruiker.
+  - Het adres gaat alleen mee als de gebruiker aanvinkt dat hij het zelf beheert; het volledige adres is dan zichtbaar.
+  - Een bedrag met komma of punt wordt geweigerd. De knop is een gewone link (geen pop-up) en er gaat geen logo-URL mee.
+  - Nieuwe controls MICA-3 (partner in register, passport voor NL, geen opslag) en RECL-2 (vermelding van de vergoeding). Tests in core en web ([QA](docs/qa/2026-10-14-koopknop.md)).
+- De web-dev-server draait vast op poort 5188, zodat de API de origin accepteert.
+- Runbook `docs/runbooks/testen.md`: een testaccount (passkey), testadressen en het testen van de koopknop.
+- `.env`-bestanden staan in `.gitignore`; `apps/web/.env.example` toegevoegd.
+
+### Gewijzigd (2026-10-14)
+- `--muted` naar `#646a66` (WCAG AA), op verzoek van de eigenaar, als overschrijving in `app.css`.
+
+### Gewijzigd
+- **Uitloggen wist alleen de sessiecookie** (`Clear-Site-Data: "cookies"`, was ook `"storage"`). Anders verdween bij elke keer uitloggen de adressenlijst; wissen is nu een aparte keuze.
+- Compliance COOK-1: `localStorage` alleen in `apps/web/src/lib/storage.ts` (gevolgde adressen en taal; strikt noodzakelijk).
+- Privacyverklaring (accountgegevens, lokale opslag, Vercel als host), beveiligingspagina en dreigingsmodel bijgewerkt.
+- `engines.node` 24.x. De map `kern-wallet-development-test-ui/` staat in `.gitignore`.
+- Na reviewronde 2 ([docs/qa/2026-10-13-web-wallet.md](docs/qa/2026-10-13-web-wallet.md)):
+  - **Deploy-keten:**
+    - geen Git-deploys meer op Vercel;
+    - de release attesteert de artefacten, de deploy draait in een aparte job zonder repo-dependencies en controleert de attestatie;
+    - deployen gaat eerst als preview, dan de rooktest, dan promotie;
+    - de noodstop deployt alleen een geattesteerde release met scripts van dezelfde tag;
+    - een release weigert een actieve noodstop stil op te heffen;
+    - `pipefail` in de release;
+    - de Vercel CLI is vastgepind in een eigen lockfile (62.4.0, `--ignore-scripts`);
+    - er is een eigen `404.html`.
+  - **Sessie:** uitloggen na 30 minuten inactiviteit en sessiecontrole elke minuut in de client; "uitgelogd" alleen na bevestiging van de server.
+  - **Data:** fouten per adres geïsoleerd; geschiedenis en koersen gecachet; een verzending met wisselgeld naar een eigen adres heet nu een verzending (fee-grens per asset, getest).
+  - **Eerlijkheid en veiligheid:**
+    - Ontvangen toont het volledige adres in blokjes, met de waarschuwing "alleen als dit adres van jou is";
+    - opgeslagen adressen worden met checksum gevalideerd;
+    - de herkenning van herstelzinnen werkt ook met komma's, nummering, andere talen en `[uvYZ]prv`, ook in de box 3-rekenhulp;
+    - claims over ondertekenen en sleutels zijn herschreven naar feiten.
+  - **Toegankelijkheid en UX:**
+    - de dialoog houdt de focus vast en verspringt niet;
+    - het profielmenu sluit met Escape en een klik erbuiten;
+    - raakvlakken zijn minimaal 44px en invoervelden hebben genoeg contrast;
+    - laadstaat met "—" in plaats van €0;
+    - "t.o.v. gisteren" in plaats van "vandaag";
+    - foutstaten in het beveiligingscentrum;
+    - taalknop en terugknop op mobiel;
+    - enkelvoud en meervoud in de teksten.
+  - De passkey-prompt toont "KERN" (`RP_NAME`). Bij een ontbrekende API zegt de app "server niet bereikbaar" in plaats van "HTTP 404".
+- Na verificatieronde 3:
+  - **Deploy:** productie-build zonder domein, rooktest, dan direct promoveren (geen herbouw); de rooktest wacht met retries.
+  - **Herkomst:** `scripts/verify-release.sh` controleert tag op main, `github-actions[bot]` als uploader en de attestatie van `release.yml` en precies deze tag. Bij een privé-repo is attestatie uit te zetten met `ATTESTATION=off`.
+  - **Vertrouwde code:** scripts komen altijd van main; `concurrency` tussen release en noodstop; Dependabot voor de CLI.
+  - **API:** `GET` met `x-kern-session-check: 1` verlengt de sessie niet. De web-app controleert daarmee op de achtergrond, en alleen een 401 logt uit.
+  - **Geheimen:** de rekenhulp toont geen sleutelfragmenten meer en wist bij twijfel.
+
 ### Toegevoegd
+- **KERN web-wallet (alleen-lezen)** (ADR-0013): het v0-ontwerp van de eigenaar (landing en dashboard), 1-op-1 overgenomen, gekoppeld aan de backend en de rekenkern:
+  - "Maak je wallet" en "Open wallet": passkey-registratie en -login via de API. Het beveiligingscentrum toont je passkeys en kan andere sessies uitloggen.
+  - Adressen volgen (BTC, ETH): totaal saldo in EUR, dagwijziging, waardeverloop (1W/1M/1Y/ALL), bezittingen en transactiegeschiedenis met echte data.
+  - Ontvangen met QR-code en uitgelicht begin en eind van het adres. Versturen legt eerlijk uit dat dit op het web alleen met een hardware wallet kan (in ontwikkeling).
+  - Box 3-rekenhulp als tabblad, met de adressen uit de wallet.
+  - Werkende NL/EN-knop. Mobiele tabbalk, omdat de navigatie in het v0-ontwerp op mobiel verdween.
+  - Waarschuwing en wissen bij een geplakte herstelzin of privésleutel.
+  - Uitloggen, of uitloggen en dit apparaat wissen.
+- `packages/core`: portfoliomodule (saldo per asset, waarde, dagwijziging, waardeverloop, samengevoegde activiteit) met tests.
+- **Hosting op Vercel** (ADR-0011): `vercel.json` met dezelfde headers als `_headers`. Productie alleen via `release.yml` (gehasht artefact, `vercel deploy --prebuilt`, rooktest op headers). Noodstop ook voor Vercel. Check CRA-7 (`headers-gelijk`) is streng: geen verwijderregels, geen dubbele of voorwaardelijke regels, geen `routes`/`rewrites`, CSP alleen op `/*`, en auto-deploy van `main` moet uit staan. Runbook `docs/runbooks/vercel-deploy.md`.
+- ADR-0010 (naam KERN), ADR-0012 (sleutels per platform: nooit op het web; Bitcoin en EVM; app via Wallet Core native; mainnet pas na audit), ADR-0013 (web-wallet).
+- Tests voor `apps/web` (herkenning van geheimen, opslagvalidatie, volledigheid van de vertalingen, opmaak) en voor de compliance-scripts. Copy-lint weigert ook "veiligste", "unhackable" en vergelijkbare claims. De trackercheck herkent Vercel Analytics.
+- Reviewer-agent `design-reviewer`.
 - **Backend (`apps/api`)**: PostgreSQL-schema met constraints en append-only auditlog; REST API `/v1` met OpenAPI 3.1; passkey-authenticatie (WebAuthn) met gehashte sessietokens; organisaties, rollen (eigenaar/goedkeurder/alleen-lezen), eenmalige uitnodigingen; multisig-kluizen en goedkeuringsworkflow (M-van-N) met alleen client-side ciphertext; manipulatiebestendig auditlog (hash-keten); rate limiting, CSRF-origincontrole, beveiligingsheaders, body limit.
 - **Beveiliging na onafhankelijke review** ([docs/qa/2026-10-12-backend.md](docs/qa/2026-10-12-backend.md), ADR-0009):
   - ondertekenaars per kluis met gewogen goedkeuringen (solo-ondernemer met meerdere sleutels werkt);
