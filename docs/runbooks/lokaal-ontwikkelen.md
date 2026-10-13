@@ -18,6 +18,17 @@ npm run dev:api
 npm run dev
 ```
 
+## API-tests tegen echte PostgreSQL (lokaal)
+```bash
+docker compose up -d
+```
+```bash
+TEST_DATABASE_URL="postgres://ncw:ncw@localhost:5432/ncw?sslmode=disable" npm test -w @ncw/api
+```
+Elk testscenario krijgt een eigen tijdelijk schema, dat na afloop automatisch wordt verwijderd.
+
+**Docker reageert niet?** Als `docker info` blijft hangen of een "500 Internal Server Error" geeft terwijl Docker Desktop wel open staat, hangt de onderliggende VM. Sluit Docker Desktop volledig af (menubalk → Quit Docker Desktop) en start het opnieuw. Containers en images blijven bewaard.
+
 ## Kwaliteit
 ```bash
 npm test

@@ -22,6 +22,7 @@ Alle noemenswaardige wijzigingen. Formaat: [Keep a Changelog](https://keepachang
 - `docker-compose.yml` voor lokale PostgreSQL.
 
 ### Opgelost
+- Testschema's bleven achter bij tests tegen echte PostgreSQL; ze worden nu na elk testbestand verwijderd (verbindingen worden ook bij fouten gesloten).
 - Auditlog gaf vanaf de tiende regel een dubbel volgnummer uit (tekstsortering van `seq`). Gevonden door tests; er staat nu een regressietest.
 
 ## [0.1.0] - 2026-10-12

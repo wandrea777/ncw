@@ -6,4 +6,5 @@ Per review één bestand: `JJJJ-MM-DD-<onderwerp>.md` met per bevinding: **ernst
 
 | Datum | Onderwerp | Reviewers |
 |---|---|---|
-| 2026-10-12 | [Backend v0.1](2026-10-12-backend.md) | qa-reviewer, security-reviewer |
+| 2026-10-12 | [Backend v0.1](2026-10-12-backend.md) | qa-reviewer, security-reviewer, verificatie |
+| 2026-10-13 | [Lokale PostgreSQL-tests](2026-10-13-lokale-postgres-tests.md) | qa-reviewer |

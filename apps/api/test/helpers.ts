@@ -38,17 +38,33 @@ async function testDb(): Promise<Db> {
   const url = process.env.TEST_DATABASE_URL;
   if (!url) return createPgliteDb();
   const schema = `t_${crypto.randomUUID().replace(/-/g, "")}`;
+  schemas.push(schema);
   const admin = createPgDb(url);
-  await admin.query(`CREATE SCHEMA ${schema}`);
-  await admin.close();
+  try {
+    await admin.query(`CREATE SCHEMA ${schema}`);
+  } finally {
+    await admin.close();
+  }
   const sep = url.includes("?") ? "&" : "?";
   return createPgDb(`${url}${sep}options=${encodeURIComponent(`-c search_path=${schema}`)}`);
 }
 
-// Alle databases van dit testbestand netjes sluiten (anders blijven pg-verbindingen open in CI).
+// Alle databases van dit testbestand netjes sluiten (anders blijven pg-verbindingen open in CI)
+// en de tijdelijke testschema's verwijderen (alleen bij echte PostgreSQL).
 const opened: Db[] = [];
+const schemas: string[] = [];
 afterAll(async () => {
   await Promise.all(opened.map((d) => d.close().catch(() => {})));
+  const url = process.env.TEST_DATABASE_URL;
+  if (url && schemas.length) {
+    const admin = createPgDb(url);
+    try {
+      // Schemanamen zijn altijd "t_" + hex (zie testDb), dus veilig om te interpoleren.
+      for (const s of schemas) await admin.query(`DROP SCHEMA IF EXISTS ${s} CASCADE`).catch(() => {});
+    } finally {
+      await admin.close();
+    }
+  }
 });
 
 export async function setup() {
