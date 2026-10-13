@@ -15,7 +15,7 @@
        - een rooktest met retries op `SITE_URL`.
     Release en noodstop delen een `concurrency`-groep en draaien dus nooit tegelijk.
   - **Noodstop op Vercel:** `noodstop.yml` doet hetzelfde met een release naar keuze (standaard de laatste) en alleen een andere `status.json`, en wacht tot de nieuwe stand live staat.
-  - **Privé-repo:** build-attestaties werken alleen in openbare repo's of met GitHub Enterprise. Zet zolang de repo privé is de variabele `ATTESTATION=off`. De herkomst wordt dan alleen via tag en uploader gecontroleerd; dat is zwakker. **Aanbeveling: maak de repo openbaar vóór livegang** (past bij "open broncode", PLAN.md §5.3).
+  - **Openbare repo (sinds 2026-10-14):** build-attestaties werken. De variabele `ATTESTATION=off` (alleen herkomst via tag en uploader) is alleen nog een noodterugval als de repo ooit weer privé wordt.
   - **Dezelfde beveiligingsheaders als op Cloudflare Pages.** `apps/web/public/_headers` blijft bestaan, zodat we zonder codewijziging terug kunnen naar Cloudflare. Check **CRA-7 (`headers-gelijk`)** laat CI en de Vercel-build falen bij:
     - een verschil tussen `vercel.json` en `_headers`;
     - verwijderregels, dubbele headers, voorwaardelijke regels (`has`/`missing`) of onbekende sleutels zoals `routes` en `rewrites`;

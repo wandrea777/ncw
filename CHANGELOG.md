@@ -14,6 +14,7 @@ Alle noemenswaardige wijzigingen. Formaat: [Keep a Changelog](https://keepachang
   - Een bedrag met komma of punt wordt geweigerd. De knop is een gewone link (geen pop-up) en er gaat geen logo-URL mee.
   - Nieuwe controls MICA-3 (partner in register, passport voor NL, geen opslag) en RECL-2 (vermelding van de vergoeding). Tests in core en web ([QA](docs/qa/2026-10-14-koopknop.md)).
 - De web-dev-server draait vast op poort 5188, zodat de API de origin accepteert.
+- De repository is openbaar (open broncode, PLAN.md §5.3); daardoor werken build-attestaties.
 - Runbook `docs/runbooks/testen.md`: een testaccount (passkey), testadressen en het testen van de koopknop.
 - `.env`-bestanden staan in `.gitignore`; `apps/web/.env.example` toegevoegd.
 
