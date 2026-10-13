@@ -9,9 +9,9 @@
 # Peildatum inhoud: 2026-10-12.
 
 product:
-  naam: "NCW Box 3-rekenhulp"
+  naam: "KERN Box 3-rekenhulp"
   fase: 0  # 0 = read-only web-tool, 1 = wallet
-  beschrijving: "Browser-tool die op basis van publieke adressen het werkelijk rendement in box 3 berekent. Geen sleutels, geen opslag, geen server."
+  beschrijving: "Web-wallet (alleen-lezen) met passkey-account: publieke BTC- en ETH-adressen volgen, saldi in EUR, transacties, en de box 3-rekenhulp. Geen sleutels; gevolgde adressen alleen op het apparaat; de server kent alleen naam, passkeys en sessies."
 
 verplichtingen:
   - id: MICA
@@ -23,6 +23,11 @@ verplichtingen:
         type: auto
         check: geen-sleutelbibliotheken
         beschrijving: "De web-app bevat geen bibliotheken voor sleutelbeheer of ondertekening (fase 0)."
+      - id: MICA-3
+        type: handmatig
+        beschrijving: "Koopknop (ADR-0014): (1) de partner staat in het ESMA- of AFM-register met de dienst 'wisselen van crypto-activa tegen geld', en een vergunning uit een andere lidstaat (bijv. Ierland) heeft een geldige passport-notificatie voor Nederland; (2) het contract legt dienst, KYC en betaling bij de partner, en KERN geeft geen orders door; (3) de vergoeding is een omzetdeling uit de eigen fee van de partner, met opslag 0 voor de gebruiker; (4) entiteit en vergunning in ONRAMP_PARTNERS kloppen. Vóór activeren en daarna elk halfjaar."
+        interval: 180
+        laatstGecontroleerd: null
       - id: MICA-2
         type: handmatig
         beschrijving: "Juridische toets van de perimeter vóórdat een functie wordt toegevoegd die transacties maakt, doorstuurt of daaraan verdient."
@@ -84,6 +89,10 @@ verplichtingen:
         beschrijving: "Account bij het ENISA Single Reporting Platform en contact met de CSIRT (NCSC) geregeld, zodat melden binnen 24 uur kan."
         interval: 365
         laatstGecontroleerd: null
+      - id: CRA-7
+        type: auto
+        check: headers-gelijk
+        beschrijving: "Vercel (vercel.json) en Cloudflare Pages (_headers) sturen exact dezelfde beveiligingsheaders, inclusief CSP."
       - id: CRA-6
         type: handmatig
         beschrijving: "Fase 1: technische documentatie (bijlage VII), ondersteuningsperiode en EU-conformiteitsverklaring vóór 11-12-2027."
@@ -146,19 +155,19 @@ verplichtingen:
         beschrijving: "De build bevat geen analytics of trackers."
       - id: AVG-3
         type: handmatig
-        beschrijving: "Privacyverklaring jaarlijks herzien en verwerkersovereenkomst met de hostingpartij gecontroleerd."
+        beschrijving: "Privacyverklaring jaarlijks herzien en verwerkersovereenkomst (DPA) met de hostingpartij (nu Vercel, ADR-0011) gecontroleerd."
         interval: 365
         laatstGecontroleerd: null
 
   - id: COOKIES
     wet: "Telecommunicatiewet art. 11.7a (ePrivacy)"
     geldt: "ja"
-    waarom: "Geen cookie-banner nodig zolang we niets op het apparaat opslaan."
+    waarom: "Geen cookie-banner nodig: alleen een strikt noodzakelijke sessiecookie en functionele lokale opslag op verzoek van de gebruiker (gevolgde publieke adressen, taalkeuze). Geen tracking. ⚖️"
     controls:
       - id: COOK-1
         type: auto
         check: geen-opslag
-        beschrijving: "Geen document.cookie, localStorage, sessionStorage of IndexedDB in de broncode."
+        beschrijving: "Geen document.cookie, sessionStorage of IndexedDB in de broncode; localStorage alleen in apps/web/src/lib/storage.ts voor door de gebruiker toegevoegde publieke adressen en de taalkeuze (strikt noodzakelijk, ADR-0013)."
 
   - id: CONSUMENT
     wet: "Burgerlijk Wetboek boek 6 en 7 (algemene voorwaarden, digitale inhoud), Wet handhaving consumentenbescherming"
@@ -180,6 +189,11 @@ verplichtingen:
     geldt: "ja"
     waarom: "Geen misleidende beloftes over veiligheid of rendement."
     controls:
+      - id: RECL-2
+        type: handmatig
+        beschrijving: "Koopknop: de vergoeding van de partner aan KERN staat duidelijk bij de knop; geen aanprijzing van rendement; geen iDEAL/Wero noemen zonder schriftelijke bevestiging van de partner."
+        interval: 180
+        laatstGecontroleerd: null
       - id: RECL-1
         type: auto
         check: copy-lint

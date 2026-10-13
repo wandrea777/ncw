@@ -8,8 +8,18 @@ export function Privacy() {
 
       <h2>Kort</h2>
       <ul>
-        <li>Wij verzamelen, ontvangen en bewaren <strong>geen</strong> persoonsgegevens. Er is geen account, geen tracking en geen cookies.</li>
-        <li>De berekening draait volledig in je browser. Wat je invoert verdwijnt als je de pagina sluit.</li>
+        <li>
+          Voor je account bewaren wij alleen je <strong>naam</strong> (die je zelf kiest), de <strong>publieke sleutels van je
+          passkeys</strong> en je <strong>sessies</strong> (met tijdstippen). Geen e-mailadres, geen telefoonnummer, geen
+          wachtwoord. Doel: je veilig laten inloggen (uitvoering van de overeenkomst, art. 6 lid 1 sub b AVG). Deze gegevens
+          staan in een database binnen de EU [HOSTINGPARTIJ API] (zie ADR-0007).
+        </li>
+        <li>
+          De <strong>adressen die je volgt</strong> bewaren wij niet: ze staan alleen in de opslag van je browser
+          (functioneel, op jouw verzoek). Ook je taalkeuze staat daar. Er is geen tracking en er zijn geen
+          analytics-cookies. De sessiecookie is strikt noodzakelijk om ingelogd te blijven.
+        </li>
+        <li>De box 3-berekening draait volledig in je browser. Wat je daar invoert verdwijnt als je de pagina sluit.</li>
         <li>Om publieke blockchaindata en koersen op te halen, maakt je browser rechtstreeks verbinding met de partijen hieronder. Zij zien daarbij je IP-adres en, waar vermeld, het adres dat je opvraagt.</li>
       </ul>
 
@@ -43,16 +53,29 @@ export function Privacy() {
         maken. Een geautomatiseerde controle zorgt dat deze lijst en het beleid altijd gelijk zijn.
       </p>
 
+      <h2>Kopen via een partner</h2>
+      <p>
+        Kies je "Geld toevoegen", dan opent de site van een partner met een MiCA-vergunning in een nieuw tabblad. In die link staan
+        de munt, het bedrag en (bij Ramp Network, alleen als je aanvinkt dat je het adres zelf beheert) je ontvangstadres. De partner
+        is zelf verantwoordelijk voor de verwerking van je gegevens, de identiteitscontrole en de betaling; zie hun
+        privacyverklaring. KERN ontvangt geen betaal- of identiteitsgegevens en onze server ziet niet of je iets koopt. Keer je na
+        afloop terug naar KERN, dan ziet onze hostingpartij een gewoon paginabezoek. De partner kan ons per doorverwezen aankoop
+        een vergoeding betalen uit zijn eigen kosten en ons daarvoor geaggregeerde aantallen tonen.
+      </p>
+
       <h2>Hosting</h2>
       <p>
-        De website wordt geserveerd via [HOSTINGPARTIJ]. Die verwerkt technisch noodzakelijke verbindingsgegevens (zoals je IP-adres)
-        om de site te kunnen leveren en te beveiligen. Wij gebruiken geen analytics.
+        De website wordt geserveerd door Vercel Inc. (Verenigde Staten). Vercel verwerkt technisch noodzakelijke verbindingsgegevens
+        (zoals je IP-adres) om de site te kunnen leveren en te beveiligen; dat kan buiten de EER gebeuren. Wij gebruiken geen
+        analytics, ook niet die van Vercel.
       </p>
 
       <h2>Je rechten</h2>
       <p>
-        Omdat wij geen persoonsgegevens over je opslaan, kunnen we die ook niet inzien, wijzigen of verwijderen. Voor gegevens die de
-        partijen hierboven verwerken, kun je je tot hen wenden. Klachten kun je indienen bij de Autoriteit Persoonsgegevens.
+        Je kunt je accountgegevens (naam, passkeys, sessies) inzien in het beveiligingscentrum van je wallet. Inzage, correctie
+        of verwijdering van je account vraag je aan via het contactadres hieronder; verwijderen vanuit de app zelf komt nog. Voor
+        gegevens die de partijen hierboven verwerken, kun je je tot hen wenden. Klachten kun je indienen bij de Autoriteit
+        Persoonsgegevens.
       </p>
 
       <h2>Contact</h2>

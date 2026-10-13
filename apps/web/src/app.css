@@ -1,0 +1,167 @@
+/*
+ * Aanvullingen op de KERN-huisstijl (styles.css = v0, ongewijzigd).
+ * Alleen nieuwe schermen en staten, in dezelfde taal: tokens uit :root, Georgia-koppen, 1px-lijnen, geen afronding.
+ */
+/* Goedgekeurd door de eigenaar (2026-10-14): --muted iets donkerder voor WCAG AA (v0 #737975 = 4,08:1 → 5,07:1). */
+:root { --muted: #646a66; }
+body { -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--forest); outline-offset: 3px; }
+.security-section :focus-visible, .wallet-card :focus-visible, .toast :focus-visible { outline-color: #9bb5a8; }
+
+/* -------------------------------------------------------------- dialogen */
+.dialog-backdrop { position: fixed; inset: 0; z-index: 20; background: rgba(23, 28, 27, .42); display: grid; place-items: center; padding: 20px; }
+.dialog { width: min(460px, 100%); max-height: calc(100vh - 40px); overflow: auto; background: var(--paper); border: 1px solid var(--line); box-shadow: 12px 12px 0 #cbd1ca; padding: 30px 30px 26px; position: relative; }
+.dialog h2 { font-family: Georgia, serif; font-size: 28px; font-weight: 400; letter-spacing: -.03em; margin: 0 0 10px; }
+.dialog p { color: var(--muted); font-size: 13px; line-height: 1.65; margin: 0 0 18px; }
+.dialog-close { position: absolute; top: 10px; right: 10px; border: 0; background: none; color: var(--muted); width: 44px; height: 44px; display: grid; place-items: center; }
+.dialog-close:hover { color: var(--ink); }
+.dialog .primary-cta { width: 100%; justify-content: space-between; }
+.dialog-switch { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 16px; font-size: 12px; color: var(--muted); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.dialog-note { border-left: 2px solid var(--forest); padding: 4px 0 4px 12px; font-size: 12px !important; }
+
+.field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+.field span { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.field input, .field select { border: 1px solid #80857f; background: var(--white); color: var(--ink); padding: 12px 13px; font: inherit; font-size: 13px; border-radius: 0; min-height: 44px; }
+.field input:focus-visible, .field select:focus-visible { outline: 2px solid var(--forest); outline-offset: 0; border-color: var(--forest); }
+.field input[aria-invalid="true"] { border-color: #8a2d20; }
+.form-error { color: #8a2d20; font-size: 12px; margin: -6px 0 14px; }
+
+/* QR en adres */
+.qr { width: 196px; height: 196px; margin: 4px auto 18px; display: block; background: var(--white); border: 1px solid var(--line); padding: 10px; }
+.address-box { border: 1px solid var(--line); background: var(--white); padding: 12px 13px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; word-break: break-all; line-height: 1.6; margin-bottom: 14px; }
+.address-box b { color: var(--forest); font-weight: 700; }
+.segmented { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 16px; }
+.segmented button { border: 1px solid var(--line); background: transparent; color: var(--muted); padding: 8px 12px; font-size: 11px; min-height: 44px; }
+.segmented button.selected { background: var(--soft); color: var(--ink); border-color: var(--soft); }
+
+/* -------------------------------------------------------------- dashboard-aanvullingen */
+.empty-state { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 28px 0; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+.empty-state strong { font-family: Georgia, serif; font-size: 20px; font-weight: 400; display: block; margin-bottom: 6px; }
+.empty-state span { color: var(--muted); font-size: 12px; }
+.status-line { color: var(--muted); font-size: 11px; display: flex; gap: 8px; align-items: center; margin: -22px 0 34px; }
+.status-line.error { color: #8a2d20; }
+.chart-empty { height: 220px; display: grid; place-items: center; color: var(--muted); font-size: 11px; }
+.address-list { margin-top: 45px; max-width: 800px; border-top: 1px solid var(--line); }
+.address-row { min-height: 60px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; font-size: 11px; }
+.address-row code { font-family: ui-monospace, Menlo, monospace; font-size: 11px; flex: 1; word-break: break-all; }
+.address-row .chain { color: var(--forest); font-weight: 700; letter-spacing: .1em; font-size: 10px; width: 36px; }
+.row-action { border: 0; background: none; color: var(--muted); padding: 8px; min-width: 44px; min-height: 44px; display: grid; place-items: center; }
+.row-action:hover { color: var(--ink); }
+.subheading { font-family: Georgia, serif; font-size: 22px; font-weight: 400; margin: 55px 0 0; }
+.profile-menu { position: relative; }
+.profile-pop { position: absolute; bottom: 44px; left: 0; right: 0; background: var(--paper); border: 1px solid var(--line); box-shadow: 6px 6px 0 #dfe0d9; z-index: 4; }
+.profile-pop button { width: 100%; border: 0; background: none; text-align: left; padding: 12px 14px; font-size: 11px; display: flex; gap: 9px; align-items: center; }
+.profile-pop button:hover { background: var(--soft); }
+.quick-actions button:disabled { opacity: .45; cursor: not-allowed; }
+.security-card .add-button { align-self: flex-start; margin-top: 6px; }
+.badge-line { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); padding: 3px 7px; display: inline-block; }
+
+/* -------------------------------------------------------------- Box 3-rekenhulp in het dashboard */
+.tool { max-width: 860px; margin-top: 35px; }
+.tool-intro .lead { color: var(--muted); font-size: 13px; line-height: 1.7; max-width: 620px; margin: 0 0 10px; }
+.card { border-top: 1px solid var(--line); padding: 26px 0 30px; }
+.card h2 { font-family: Georgia, serif; font-size: 20px; font-weight: 400; margin: 0 0 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.row input { flex: 1 1 260px; }
+.card input, .card select, .card button:not(.primary):not(.link) { border: 1px solid #80857f; background: var(--white); color: var(--ink); padding: 10px 12px; font: inherit; font-size: 12px; border-radius: 0; min-height: 42px; }
+.card button:not(.primary):not(.link):hover:not(:disabled) { background: var(--soft); }
+.card input[aria-invalid="true"] { border-color: #8a2d20; }
+.card button.primary { border: 0; background: var(--forest); color: var(--paper); padding: 13px 18px; font-size: 12px; font-weight: 700; margin-top: 16px; min-height: 44px; }
+.card button.primary:hover:not(:disabled) { background: var(--ink); }
+.card button:disabled { opacity: .5; cursor: not-allowed; }
+.card button.link { border: 0; background: none; padding: 0 4px; font-size: 16px; color: var(--muted); min-width: 44px; min-height: 44px; }
+.chips { list-style: none; padding: 0; margin: 12px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.chips li { border: 1px solid var(--line); background: var(--white); padding: 4px 6px 4px 11px; display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.chip-chain { font-weight: 700; font-size: 10px; letter-spacing: .1em; color: var(--forest); }
+.badge { font-size: 9px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; padding: 4px 8px; display: inline-block; font-family: Arial, sans-serif; }
+.badge-warn { background: #f1ead6; color: #5c4510; }
+.banner { padding: 13px 5vw; border-bottom: 1px solid var(--line); font-size: 12px; }
+.banner-danger { background: #f5e3df; color: #7d2418; }
+.error { color: #8a2d20; font-size: 12px; }
+.warn { background: #f1ead6; color: #5c4510; padding: 9px 12px; font-size: 12px; }
+.small { font-size: 11px; line-height: 1.6; }
+.kv { width: 100%; border-collapse: collapse; border-top: 1px solid var(--line); }
+.kv th { text-align: left; font-weight: 400; color: var(--muted); padding: 12px 12px 12px 0; width: 45%; vertical-align: top; font-size: 12px; border-bottom: 1px solid var(--line); }
+.kv td { padding: 12px 0; text-align: right; font-variant-numeric: tabular-nums; font-size: 12px; border-bottom: 1px solid var(--line); }
+.kv tr.total th, .kv tr.total td { font-weight: 700; color: var(--ink); }
+.flows { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+.flows th, .flows td { text-align: left; padding: 8px 8px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.flows th { font-weight: 400; color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: .1em; }
+.flows select { min-height: 44px !important; padding: 4px 8px !important; }
+details { margin-top: 14px; }
+summary { cursor: pointer; font-weight: 700; font-size: 12px; padding: 8px 0; color: var(--forest); }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.grid label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+.grid label small { font-size: 10px; }
+.verdict { padding: 16px 18px; background: #f1ead6; color: #5c4510; margin-bottom: 18px; font-size: 13px; line-height: 1.6; }
+.verdict-good { background: #e3ebe5; color: #1f3d32; }
+.disclaimer { font-size: 11px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; margin-top: 18px; }
+.tool ul.muted { padding-left: 18px; font-size: 11px; line-height: 1.7; }
+
+/* -------------------------------------------------------------- juridische pagina's */
+.legal { padding: 90px 10vw 110px; }
+.prose { max-width: 760px; }
+.prose h1 { font-family: Georgia, serif; font-size: clamp(38px, 4.4vw, 58px); font-weight: 400; letter-spacing: -.045em; line-height: 1; margin: 0 0 30px; overflow-wrap: anywhere; hyphens: auto; }
+.prose h2 { font-family: Georgia, serif; font-size: 22px; font-weight: 400; margin: 40px 0 10px; }
+.prose p, .prose li { color: #4f5652; font-size: 14px; line-height: 1.75; }
+.prose code { font-size: 12px; word-break: break-all; }
+.legal-links { display: flex; gap: 18px; flex-wrap: wrap; }
+.legal-links a:hover { color: var(--ink); }
+
+@media (max-width: 800px) {
+  .legal { padding: 60px 8vw 80px; }
+  .dialog { padding: 26px 22px 22px; }
+  .status-line { margin-top: -10px; }
+  .flows { display: block; overflow-x: auto; }
+}
+
+@media print {
+  .sidebar, .dash-header, .dash-footer, .tool-intro, button, details, .banner, .toast { display: none !important; }
+  .dashboard-shell { display: block; }
+  body, .dashboard-shell { background: #fff; }
+  .card { border: 0; padding: 0 0 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; }
+}
+.dialog-note.spaced { margin-top: 18px !important; margin-bottom: 0 !important; }
+.asset-icon.btc { background-color: #F7931A; }
+.asset-icon.eth { background-color: #627EEA; }
+.price-note { color: var(--muted); font-size: 9px; letter-spacing: .04em; margin: 12px 0 0; }
+
+/* Mobiel: het v0-ontwerp verbergt de navigatie en het profiel onder 800px. Zonder tabbalk zijn de tabbladen en
+   uitloggen onbereikbaar; daarom dezelfde nav-items, horizontaal, en het profiel rechtsboven. */
+@media (max-width: 800px) {
+  .sidebar { display: grid; grid-template-columns: 1fr auto; align-items: center; row-gap: 14px; }
+  .sidebar .side-nav { display: flex; flex-direction: row; grid-column: 1 / -1; overflow-x: auto; gap: 2px; margin: 0 -6vw; padding: 0 6vw; scrollbar-width: none; }
+  .sidebar .side-nav .nav-item { width: auto; white-space: nowrap; padding: 10px 12px; min-height: 44px; }
+  .sidebar .side-nav .nav-status { display: none; }
+  .sidebar .sidebar-bottom { display: block; grid-column: 2; grid-row: 1; margin: 0; }
+  .sidebar-bottom .security-mini, .sidebar-bottom .profile-name, .sidebar-bottom .profile svg { display: none; }
+  .sidebar-bottom .profile { border: 0; padding: 0; width: auto; }
+  .profile-pop { top: 38px; bottom: auto; left: auto; right: 0; width: 270px; }
+}
+
+/* Ronde-2-review: knoppen die op mobiel hun tekst moeten houden (v0 maakt .add-button daar icoon-only),
+   raakvlakken, taalknop en terugknop. */
+.inline-action { border: 0; background: var(--forest); color: var(--paper); padding: 11px 14px; display: inline-flex; gap: 8px; align-items: center; font-size: 11px; min-height: 44px; }
+.inline-action:hover { background: var(--ink); }
+.security-card .inline-action { align-self: flex-start; margin-top: 6px; }
+.address-box.chunked span, .address-box.chunked b { margin-right: 5px; display: inline-block; }
+.address-box.chunked span { color: var(--ink); }
+.warn-note { border-left-color: #5c4510 !important; color: #5c4510 !important; }
+.legal-back { margin-bottom: 40px; min-height: 44px; }
+.referral-button { width: 100%; background: none; border-left: 0; border-right: 0; text-align: left; color: inherit; font: inherit; cursor: pointer; }
+.referral-button:hover strong { color: var(--forest); }
+.toast .text-button { color: #bdd1c5; min-height: 32px; }
+@media (max-width: 800px) {
+  .header-actions .icon-button.lang-switch { display: flex; min-height: 44px; }
+  .sidebar-bottom .profile .avatar { width: 44px; height: 44px; font-size: 11px; }
+  .empty-state .inline-action, .security-card .inline-action { font-size: 12px; }
+}
+.heading-actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 12px; color: var(--ink); margin: -2px 0 16px; cursor: pointer; }
+.check input { width: 20px; height: 20px; margin: 0; accent-color: var(--forest); flex-shrink: 0; }
+a.primary-cta { text-decoration: none; }

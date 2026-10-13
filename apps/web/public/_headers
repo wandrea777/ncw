@@ -1,4 +1,4 @@
-# Beveiligingsheaders voor Cloudflare Pages.
+# Beveiligingsheaders voor Cloudflare Pages. Moeten exact gelijk zijn aan vercel.json (check CRA-7, headers-gelijk).
 # connect-src MOET exact overeenkomen met compliance/third-parties.json (gecontroleerd door npm run compliance).
 /*
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://mempool.space https://eth.blockscout.com https://data-api.binance.vision; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests

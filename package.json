@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "npm run dev -w @ncw/web",
     "build": "npm run build -w @ncw/core && npm run build -w @ncw/web",
-    "test": "npm run test --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present && node --test \"compliance/scripts/test/*.test.mjs\"",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "compliance": "node compliance/scripts/compliance-check.mjs",
     "compliance:release": "node compliance/scripts/compliance-check.mjs --release",
@@ -22,5 +22,8 @@
   },
   "devDependencies": {
     "yaml": "2.9.1"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

@@ -18,6 +18,7 @@ import {
   type PriceSeries,
 } from "@ncw/core";
 import { fmtDate, fmtEur, fmtNum, fmtPct, shortAddr } from "../lib/format";
+import { looksLikeSecret } from "../lib/secrets";
 
 interface Entry {
   address: string;
@@ -41,12 +42,12 @@ const OVERIG_VELDEN = [
 
 type OverigKey = (typeof OVERIG_VELDEN)[number][0];
 
-export function Tool({ disabled }: { disabled: boolean }) {
+export function Tool({ disabled, initialAddresses = [] }: { disabled: boolean; initialAddresses?: Array<{ address: string; chain: Chain }> }) {
   const defaultYear = SUPPORTED_YEARS.filter((y) => y < new Date().getUTCFullYear()).at(-1) ?? SUPPORTED_YEARS[0]!;
   const [year, setYear] = useState<number>(defaultYear);
   const [input, setInput] = useState("");
   const [inputError, setInputError] = useState<string | null>(null);
-  const [entries, setEntries] = useState<Entry[]>([]);
+  const [entries, setEntries] = useState<Entry[]>(() => initialAddresses.map(({ address, chain }) => ({ address, chain })));
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fetched, setFetched] = useState<Fetched | null>(null);
@@ -64,11 +65,19 @@ export function Tool({ disabled }: { disabled: boolean }) {
 
   function addAddress() {
     const parts = input.split(/[\s,;]+/).filter(Boolean);
+    // Geheel én elk deel controleren (bijv. een adres met daarachter een sleutel). Bij twijfel wissen, nooit tonen.
+    if (looksLikeSecret(input) || parts.some(looksLikeSecret)) {
+      setInput("");
+      setInputError("Dit lijkt op een herstelzin of privésleutel. Deel die nooit, ook niet met KERN. De invoer is gewist.");
+      return;
+    }
     const added: Entry[] = [];
-    for (const p of parts) {
+    for (const [i, p] of parts.entries()) {
       const r = checkAddress(p);
       if (!r.ok) {
-        setInputError(`${shortAddr(p)}: ${r.reason}`);
+        // Alleen een fragment tonen als het op een adres lijkt; anders het volgnummer (geen sleutelfragmenten in beeld).
+        const looksLikeAddress = /^(bc1|[13]|0x)[0-9a-zA-Z]{20,90}$/.test(p);
+        setInputError(`${looksLikeAddress ? shortAddr(p) : `Invoer ${i + 1}`}: ${r.reason}`);
         return;
       }
       if (![...entries, ...added].some((e) => e.address === r.normalized)) added.push({ address: r.normalized, chain: r.chain });
@@ -129,8 +138,7 @@ export function Tool({ disabled }: { disabled: boolean }) {
 
   return (
     <div className="tool">
-      <section className="hero">
-        <h1>Betaal je te veel box 3-belasting over je crypto?</h1>
+      <section className="tool-intro">
         <p className="lead">
           Vergelijk het forfaitaire rendement met je werkelijke rendement (de tegenbewijsregeling). Je voert alleen
           publieke adressen in. <strong>Nooit je herstelzin of privésleutel.</strong> De berekening draait volledig in je
@@ -141,7 +149,7 @@ export function Tool({ disabled }: { disabled: boolean }) {
       <section className="card">
         <h2>1. Belastingjaar</h2>
         <div className="row">
-          <select value={year} onChange={(e) => (setYear(Number(e.target.value)), setFetched(null))} disabled={disabled}>
+          <select aria-label="Belastingjaar" value={year} onChange={(e) => (setYear(Number(e.target.value)), setFetched(null))} disabled={disabled}>
             {SUPPORTED_YEARS.map((y) => (
               <option key={y} value={y}>
                 {y}

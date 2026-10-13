@@ -31,7 +31,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     port: int("PORT", env.PORT, 8787, 1, 65535),
     databaseUrl: env.DATABASE_URL ?? null,
     rpId: env.RP_ID ?? "localhost",
-    rpName: env.RP_NAME ?? "NCW",
+    rpName: env.RP_NAME ?? "KERN",
     origin: env.APP_ORIGIN ?? "http://localhost:5188",
     sessionTtlHours: int("SESSION_TTL_HOURS", env.SESSION_TTL_HOURS, 12, 1, 24),
     sessionIdleMinutes: int("SESSION_IDLE_MINUTES", env.SESSION_IDLE_MINUTES, 30, 5, 120),

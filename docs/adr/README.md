@@ -13,3 +13,8 @@ Elke belangrijke keuze wordt vastgelegd als ADR: context, besluit, alternatieven
 | 0007 | [Hosting in de EU](0007-hosting-eu.md) | Voorgesteld |
 | 0008 | [Doelgroep: ondernemers met grote vermogens](0008-doelgroep-ondernemers.md) | Aangenomen |
 | 0009 | [Ondertekenaars per kluis, step-up en bevestiging van nieuwe leden](0009-ondertekenaars-stepup-bevestiging.md) | Aangenomen |
+| 0010 | [KERN als naam van bedrijf en product](0010-naam-kern.md) | Aangenomen |
+| 0011 | [De web-app voorlopig op Vercel](0011-web-hosting-vercel.md) | Aangenomen |
+| 0012 | [Sleutelbeheer per platform en ondersteunde chains](0012-sleutelbeheer-per-platform.md) | Aangenomen |
+| 0013 | [Web-wallet: het v0-ontwerp gekoppeld aan API en rekenkern](0013-web-wallet-frontend.md) | Aangenomen |
+| 0014 | [Verdienen aan kopen via een partner met MiCA-vergunning](0014-verdienmodel-kopen-via-partner.md) | Aangenomen (juridische toets vóór activeren) |
