@@ -4,6 +4,11 @@ Alle noemenswaardige wijzigingen. Formaat: [Keep a Changelog](https://keepachang
 
 ## [Onvoltooid]
 
+### Gewijzigd (2026-10-14, supply chain)
+- **Dependabot-cooldown van 7 dagen** voor npm, GitHub Actions en de Vercel CLI. De bestaande regel "alleen versies die minstens 7 dagen oud zijn" hangt zo niet meer af van discipline; security-updates komen direct.
+- `VERCEL_TELEMETRY_DISABLED=1` in release en noodstop.
+- Dependabot-PR's #4 (lucide-react 1.55.0) en #5 (vercel 63.1.2): inhoudelijk schoon, maar jonger dan 7 dagen. Mergen vanaf 17-10 respectievelijk 16-10 ([QA](docs/qa/2026-10-14-dependabot.md)).
+
 ### Toegevoegd (2026-10-14, versturen met een Ledger)
 - **Bitcoin versturen met een Ledger in de browser, alleen op testnet4** (ADR-0015, stap 2 uit ADR-0012):
   - WebHID met de app "Bitcoin Test". De sleutel blijft op het apparaat; de gebruiker controleert ontvanger, bedrag en vergoeding op het scherm.
