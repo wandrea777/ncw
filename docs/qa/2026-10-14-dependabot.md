@@ -12,3 +12,7 @@
 | 5 | Info | Vercel-telemetrie staat standaard aan in de deploy-jobs | Opgelost | `VERCEL_TELEMETRY_DISABLED=1` in release en noodstop. |
 | 6 | Info | #4 (lucide-react 1.55.0) is schoon: alleen SVG-iconen, geen netwerk- of DOM-sinks, SLSA-provenance | Mergen vanaf 17-10 06:13 UTC | Gepubliceerd op 10-10. Het pakket zit in de wallet-bundle, dus ook hier geldt 7 dagen. |
 | 7 | Laag | lucide-react heeft één beheerder | Geaccepteerd | Restrisico; `npm audit signatures` draait nu in CI. |
+
+## Vervolg (2026-10-14)
+- Na de cooldown verving Dependabot #4 door **#9: lucide-react 1.52.0** (gepubliceerd op 2026-10-04, dus 10 dagen oud). ISC, geen dependencies, SLSA-provenance, geen nieuwe pakketten in de lockfile, en valt binnen de reeds gereviewde wijzigingen 1.17 → 1.55. **Gemerged** bij groene CI.
+- #5 (vercel 63.1.2) wacht tot 16-10 21:14 UTC, en daarna eerst een preview-run.
