@@ -438,6 +438,28 @@
           },
           "cancelAtPeriodEnd": {
             "type": "boolean"
+          },
+          "price": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "amount": {
+                "type": "number"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "interval": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "amount",
+              "currency",
+              "interval"
+            ]
           }
         },
         "required": [
@@ -445,7 +467,8 @@
           "premium",
           "status",
           "currentPeriodEnd",
-          "cancelAtPeriodEnd"
+          "cancelAtPeriodEnd",
+          "price"
         ]
       },
       "RedirectUrl": {
@@ -4393,6 +4416,96 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RedirectUrl"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Ongeldige invoer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Niet ingelogd",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Geen toegang",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Niet gevonden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Te veel verzoeken",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Betalen staat uit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/billing/sync": {
+      "post": {
+        "tags": [
+          "billing"
+        ],
+        "description": "Haalt de abonnementen van de gebruiker opnieuw op bij Stripe (herstel na een gemiste of vertraagde webhook).",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Billing"
                 }
               }
             }

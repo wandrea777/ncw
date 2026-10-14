@@ -11,7 +11,7 @@
 | API-contract (OpenAPI 3.1) | [api/openapi.json](api/openapi.json) · [api/README.md](api/README.md) |
 | Compliance | [../compliance/README.md](../compliance/README.md) |
 | QA-rapporten van onafhankelijke reviewers | [qa/README.md](qa/README.md) |
-| Runbooks | [lokaal ontwikkelen](runbooks/lokaal-ontwikkelen.md) · [database productie](runbooks/database-productie.md) · [GitHub beveiligen](runbooks/github-beveiligen.md) · [Vercel-deploy](runbooks/vercel-deploy.md) · [zelf testen](runbooks/testen.md) |
+| Runbooks | [lokaal ontwikkelen](runbooks/lokaal-ontwikkelen.md) · [database productie](runbooks/database-productie.md) · [GitHub beveiligen](runbooks/github-beveiligen.md) · [Vercel-deploy](runbooks/vercel-deploy.md) · [zelf testen](runbooks/testen.md) · [abonnement testen (Stripe)](runbooks/stripe-testen.md) |
 | Wijzigingen | [../CHANGELOG.md](../CHANGELOG.md) |
 | Werkafspraken (ook voor Claude) | [../CLAUDE.md](../CLAUDE.md) |
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isStripeRedirect } from "../src/lib/api";
+import { billingReturn, formatPrice, isStripeRedirect } from "../src/lib/api";
 
 describe("doorsturen naar Stripe", () => {
   it("staat alleen https naar de exacte Stripe-host toe", () => {
@@ -17,5 +17,16 @@ describe("doorsturen naar Stripe", () => {
     ]) {
       expect(isStripeRedirect(bad, "checkout.stripe.com"), bad).toBe(false);
     }
+  });
+
+  it("toont de prijs zoals Stripe die kent", () => {
+    expect(formatPrice({ amount: 3500, currency: "eur", interval: "year" }).replace(/\s/g, " ")).toBe("€ 35,00 per jaar");
+    expect(formatPrice({ amount: 499, currency: "eur", interval: "month" }).replace(/\s/g, " ")).toBe("€ 4,99 per maand");
+  });
+
+  it("herkent de terugkeer van Stripe en haalt de parameter weg (hash blijft)", () => {
+    expect(billingReturn("http://localhost:5188/?abonnement=terug#/wallet")).toEqual({ returned: true, cleaned: "http://localhost:5188/#/wallet" });
+    expect(billingReturn("http://localhost:5188/?abonnement=iets#/wallet").returned).toBe(false);
+    expect(billingReturn("http://localhost:5188/#/wallet")).toEqual({ returned: false, cleaned: "http://localhost:5188/#/wallet" });
   });
 });

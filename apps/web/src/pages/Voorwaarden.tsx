@@ -35,8 +35,12 @@ export function Voorwaarden() {
       <h2>5. Abonnement op het aangifterapport</h2>
       <ul>
         <li>Het abonnement kost € 35 per jaar [incl. btw / geen btw (KOR)] en wordt betaald via Stripe.</li>
-        <li>Je kunt binnen 14 dagen na het afsluiten zonder opgave van reden opzeggen; je krijgt dan het volledige bedrag terug.</li>
-        <li>Opzeggen kan altijd via "Abonnement beheren". [Na het eerste jaar: maandelijks opzegbaar met terugbetaling van het te veel betaalde, art. 7:236 BW: laten toetsen.]</li>
+        <li>
+          Herroepingsrecht: je kunt binnen 14 dagen na het afsluiten zonder opgave van reden herroepen. Stuur daarvoor een bericht
+          naar [E-MAIL] (het modelformulier voor herroeping staat [LINK]); je krijgt het volledige bedrag binnen 14 dagen terug.
+          Opzeggen in "Abonnement beheren" alleen stopt de verlenging, maar betaalt niet automatisch terug.
+        </li>
+        <li>Opzeggen via "Abonnement beheren" stopt het abonnement aan het einde van de lopende periode. [Na het eerste jaar: maandelijks opzegbaar met terugbetaling van het te veel betaalde, art. 7:236 BW: laten toetsen.]</li>
         <li>De gratis rekenhulp blijft beschikbaar, ook zonder abonnement.</li>
       </ul>
 

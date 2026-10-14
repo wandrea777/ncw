@@ -15,7 +15,7 @@ export interface Config {
 }
 
 export interface StripeConfig {
-  /** Bij voorkeur een restricted key (`rk_`) met alleen de rechten uit ADR-0016. */
+  /** Restricted key (`rk_`, in productie verplicht) met alleen de rechten uit ADR-0016. */
   secretKey: string;
   webhookSecret: string;
   priceId: string;
@@ -38,6 +38,8 @@ export function loadStripeConfig(env: NodeJS.ProcessEnv, mode: Config["env"]): S
   if (secretKey && !live && !test) problems.push("STRIPE_SECRET_KEY heeft een onbekend formaat");
   if (mode === "production" && test) problems.push("testsleutel van Stripe in productie");
   if (mode !== "production" && live) problems.push("live sleutel van Stripe buiten productie");
+  // In productie alleen een restricted key: een gelekte sleutel kan dan niet terugbetalen, uitbetalen of het account beheren.
+  if (mode === "production" && live && !secretKey.startsWith("rk_live_")) problems.push("gebruik in productie een restricted key (rk_live_)");
   if (webhookSecret && !/^whsec_[A-Za-z0-9]{10,}$/.test(webhookSecret)) problems.push("STRIPE_WEBHOOK_SECRET heeft een onbekend formaat");
   if (priceId && !/^price_[A-Za-z0-9]{6,}$/.test(priceId)) problems.push("STRIPE_PRICE_ID heeft een onbekend formaat");
   if (problems.length) throw new Error(`Onveilige Stripe-configuratie: ${problems.join("; ")}`);

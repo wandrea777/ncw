@@ -82,10 +82,12 @@ export function Privacy() {
       <h2>Abonnement en betalen (Stripe)</h2>
       <p>
         Neem je een abonnement op het Box 3-rapport, dan ga je naar de betaalpagina van Stripe (Stripe Payments Europe Ltd.,
-        Ierland). Stripe verwerkt je e-mailadres, betaalgegevens en facturen als zelfstandige verantwoordelijke; zie hun
-        privacyverklaring. KERN bewaart alleen een Stripe-klantnummer, het abonnementsnummer, de status en de einddatum van de
-        periode, gekoppeld aan je account. Geen e-mailadres, naam of betaalgegevens. Het rapport zelf wordt in je browser gemaakt;
-        adressen en bedragen gaan niet naar KERN of Stripe.
+        Ierland). Stripe verwerkt je e-mailadres, betaalgegevens en facturen; zie hun privacyverklaring. Stripe kan gegevens
+        doorgeven aan Stripe, Inc. in de Verenigde Staten. KERN stuurt Stripe geen gegevens over jou, ook niet je account-ID:
+        we maken een lege Stripe-klant aan en bewaren zelf alleen het Stripe-klantnummer, het abonnementsnummer, de status en de
+        einddatum van de periode, gekoppeld aan je account. Geen e-mailadres, naam of betaalgegevens. Het rapport zelf wordt in
+        je browser gemaakt; adressen en bedragen gaan niet naar KERN of Stripe. [Rol van Stripe (verwerker of zelfstandig
+        verantwoordelijke) per verwerking laten toetsen, AVG-3.]
       </p>
 
       <h2>Je rechten</h2>

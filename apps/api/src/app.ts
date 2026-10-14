@@ -92,7 +92,10 @@ export function createApp(deps: Deps) {
   app.use("/v1/auth/register/*", authLimit);
   app.use("/v1/auth/login/*", authLimit);
   app.use("/v1/auth/step-up/*", rateLimit({ name: "stepup", capacity: 30, refillPerMinute: 30, key: ip }));
-  app.use("/v1/*", rateLimit({ name: "api", capacity: 120, refillPerMinute: 120, key: ip }));
+  // De Stripe-webhook krijgt een eigen bucket: anders kan iemand achter hetzelfde (proxy-)IP de webhook met 429 vertragen.
+  const apiLimit = rateLimit({ name: "api", capacity: 120, refillPerMinute: 120, key: ip });
+  const webhookLimit = rateLimit({ name: "stripe-webhook", capacity: 600, refillPerMinute: 600, key: ip });
+  app.use("/v1/*", (c, next) => (c.req.path === WEBHOOK_PATH ? webhookLimit(c, next) : apiLimit(c, next)));
 
   app.get("/health", async (c) => {
     await db.query("SELECT 1");

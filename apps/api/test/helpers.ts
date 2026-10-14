@@ -4,6 +4,7 @@ import { loadConfig } from "../src/config.ts";
 import { createPgDb, createPgliteDb, type Db } from "../src/db/db.ts";
 import { migrate } from "../src/db/migrate.ts";
 import type { PasskeyService } from "../src/auth/webauthn.ts";
+import type { BillingProvider } from "../src/billing/provider.ts";
 
 export const ORIGIN = "http://localhost:5188";
 
@@ -67,16 +68,17 @@ afterAll(async () => {
   }
 });
 
-export async function setup() {
+export async function setup(opts: { env?: Record<string, string>; billing?: BillingProvider | null } = {}) {
   const db = await testDb();
   opened.push(db);
   await migrate(db);
-  const cfg = loadConfig({ NODE_ENV: "test", APP_ORIGIN: ORIGIN });
+  const cfg = loadConfig({ NODE_ENV: "test", APP_ORIGIN: ORIGIN, ...opts.env });
   let ipCounter = 0;
   const app = createApp({
     db,
     cfg,
     passkeys: fakePasskeys,
+    billing: opts.billing ?? null,
     log: (e) => {
       if (e.level === "error") console.error("APPLOG", JSON.stringify(e));
     },

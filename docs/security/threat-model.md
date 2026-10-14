@@ -13,6 +13,7 @@
 | Beschikbaarheid van de coördinatie | Middel (geld blijft bereikbaar zonder ons) | API + database |
 | Gevolgde adressen in de web-wallet | Hoog (koppelt een persoon aan een vermogen) | Alleen in de browser van de gebruiker (`localStorage`), nooit op onze server (ADR-0013) |
 | Accountgegevens: naam, passkeys, sessies | Middel | Database (publieke sleutels, gehashte sessietokens) |
+| Abonnementsstatus en Stripe-ID's; Stripe-sleutel en webhookgeheim | Middel (geld van klanten, chargebacks) | Database (geen e-mail of betaalgegevens; ADR-0016); secrets alleen in de secret manager |
 | Integriteit van de uitgeleverde web-code | Zeer hoog zodra er ondertekend wordt (hardware wallet) | Vercel (ADR-0011) |
 
 ## 2. Aanvallers
@@ -32,11 +33,13 @@
 |---|---|---|---|
 | **S**poofing | Inloggen als bestuurder | Passkeys met user verification; phishingbestendig | ✅ |
 | | Gestolen sessiecookie | HttpOnly, Secure, SameSite=Strict, `__Host-`; korte levensduur; hash in DB | ✅ |
+| | Vervalste Stripe-webhook (gratis premium) | Handtekening via de officiële SDK, tolerantie 300 s; status altijd vers opgehaald bij Stripe; koppeling alleen via eigen klanttabel; premium alleen bij onze prijs en een lopende periode (ADR-0016) | ✅ |
 | | Gekloonde authenticator | Detectie van teruglopende teller vóór verificatie, atomaire update | ✅ |
 | | Onderschepte uitnodigingscode | Nooit eigenaarschap; pending tot bevestiging met veiligheidscode; intrekbaar | ✅ |
 | | Gestolen sessie voert gevoelige actie uit | Step-up: verse passkey per actie (target-gebonden) voor alle wijzigende beheer- en goedkeuringsacties; lezen en voorstellen indienen kan wel met alleen een sessie | ✅ |
 | **T**ampering | Goedkeuring vervalsen in de DB | On-chain multisig is de echte controle; auditketen detecteert wijzigingen | ✅ / ⏳ verankering |
 | | Transactie-inhoud wijzigen | PSBT ondertekend op de hardware wallet; gebruiker controleert het scherm van het apparaat. Web (Ledger, testnet): `verifyPlan` controleert vóór ondertekenen uitvoer, bedrag, wisselgeld en vergoeding; vorige transacties worden tegen txid en bedrag gecontroleerd (ADR-0015) | ✅ web testnet / ⏳ kluis |
+| | Race tussen webhooks laat een verouderde status staan | Opvragen en opslaan onder een lock per abonnement (getest op echte PostgreSQL); herstel via `POST /v1/billing/sync` | ✅ |
 | | Kwaadaardige code via onze webserver | Strikte CSP met Trusted Types, `hid=(self)`, geen sleutels in de browser (check MICA-1), hardware wallet als laatste controle; Ledger-code lui geladen | ✅ |
 | | Overname van het Vercel-account of de GitHub-app | Passkey/2FA op Vercel; geen Git-deploys (CRA-7); productie en noodstop alleen met een **geattesteerd** artefact, eerst als preview, rooktest, dan promoveren; deploy-job zonder repo-dependencies | ✅ config / ⏳ account inrichten |
 | | Geknoeid release-artefact of kwaadaardige tag via de noodstop | `verify-release.sh`: de tag staat op main, de release en het asset komen van `github-actions[bot]`, en de attestatie hoort bij precies `release.yml` en deze tag. Scripts komen altijd van main, nooit van de tag | ✅ (attestatie ⏳ zolang de repo privé is) |

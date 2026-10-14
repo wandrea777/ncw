@@ -36,5 +36,7 @@ Foutformaat: `{ "error": { "code": "...", "message": "...", "requestId": "..." }
 ## Abonnement (ADR-0016)
 
 - `GET /v1/billing`: status (`enabled`, `premium`, `status`, `currentPeriodEnd`, `cancelAtPeriodEnd`).
-- `POST /v1/billing/checkout` en `POST /v1/billing/portal`: geven een `url` bij Stripe terug.
+- `GET /v1/billing` geeft ook `price` (zoals Stripe die kent).
+- `POST /v1/billing/checkout` en `POST /v1/billing/portal`: geven een `url` bij Stripe terug. Checkout geeft 409 `subscription_exists` als er al een niet-beëindigd abonnement is.
+- `POST /v1/billing/sync`: haalt de abonnementen opnieuw op bij Stripe en geeft de status terug.
 - `POST /v1/billing/webhook`: alleen voor Stripe. Niet in de OpenAPI-spec; geauthenticeerd met `Stripe-Signature` in plaats van een sessie, en zonder Origin-controle.

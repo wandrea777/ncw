@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ASSETS, berekenBox3, box3ReportCsv, csvNumber, csvText, type AssetYearResult, type Box3Input } from "../src";
+import { ASSETS, berekenBox3, box3Report, box3ReportCsv, csvNumber, csvText, type AssetYearResult, type Box3Input } from "../src";
 
 const input: Box3Input = {
   year: 2025,
@@ -65,5 +65,38 @@ describe("Box 3-rapport (CSV)", () => {
     expect(tx[0]).toBe("BTC;2025-03-01;uit;-0,00001000;90000,00;0,90;onttrekking;bc1qtest;tx2");
     // Het transactie-ID van een vreemde API kan geen formule worden.
     expect(tx[1]).toBe(`BTC;2025-06-01;in;0,10000000;100000,00;10000,00;inbreng;bc1qtest;"'=HYPERLINK(""https://evil"")"`);
+  });
+
+  it("zet de waarschuwingen van het scherm ook in het rapport", () => {
+    const result = berekenBox3(input);
+    const csv = box3ReportCsv({ input, result, assets: [{ ...btc, warnings: ["Saldo klopt niet met de transactiehistorie"] }], generatedAt: new Date() });
+    expect(csv).toContain("Waarschuwing;BTC: Saldo klopt niet met de transactiehistorie\r\n");
+    if (!result.params.verified) expect(csv).toContain("Waarschuwing;De tarieven voor dit jaar zijn nog niet handmatig geverifieerd.");
+  });
+
+  it("meerdere munten, lopend jaar, interne overboeking, opbrengst en ETH met 18 decimalen", () => {
+    const eth: AssetYearResult = {
+      ...btc,
+      asset: ASSETS.ethereum,
+      unitsBegin: 1.5,
+      indicatief: true,
+      priceEnd: 3000,
+      flows: [
+        { id: "0xa", address: "0xabc", timestamp: Date.UTC(2025, 0, 2), delta: 21_000_000_000_000n, priceEur: 3000, valueEur: 0.063, direction: "uit", internal: false, classification: null },
+        { id: "0xb", address: "0xabc", timestamp: Date.UTC(2025, 0, 3), delta: 10n ** 18n, priceEur: 3000, valueEur: 3000, direction: "in", internal: false, classification: "opbrengst" },
+        { id: "0xc", address: "0xabc", timestamp: Date.UTC(2025, 0, 4), delta: 10n ** 17n, priceEur: 3000, valueEur: 300, direction: "in", internal: true, classification: null },
+      ],
+    };
+    const r = box3Report({ input, result: berekenBox3(input), assets: [btc, eth], generatedAt: new Date() });
+    const labels = r.lines.map((l) => `${l.section}|${l.label}`);
+    expect(labels).toContain("BTC|Koers 1 januari 2026 (EUR)");
+    expect(labels).toContain("ETH|Saldo nu (indicatief)");
+    expect(labels).toContain("ETH|Koers nu (indicatief) (EUR)");
+    expect(labels).toContain("Crypto totaal|Waarde 1 januari 2025 (EUR)");
+    expect(r.warnings).toContain("Lopend jaar: de uitkomst verandert nog.");
+    expect(r.transactions.filter((t) => t.symbol === "ETH").map((t) => t.kind)).toEqual(["onttrekking", "opbrengst", "interne overboeking"]);
+    const csv = box3ReportCsv({ input, result: berekenBox3(input), assets: [btc, eth], generatedAt: new Date() });
+    // 21.000 gwei gas blijft zichtbaar (niet afgerond naar 0).
+    expect(csv).toContain("ETH;2025-01-02;uit;0,000021000000000000;");
   });
 });
