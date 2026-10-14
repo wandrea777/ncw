@@ -4,6 +4,17 @@ Alle noemenswaardige wijzigingen. Formaat: [Keep a Changelog](https://keepachang
 
 ## [Onvoltooid]
 
+### Toegevoegd (2026-10-14, abonnement)
+- **Abonnement op het Box 3-aangifterapport via Stripe** (ADR-0016), €35 per jaar. De rekenhulp en "Afdrukken als PDF" blijven gratis.
+  - Het rapport is een CSV met de peildatumwaarden, het overige vermogen, de uitkomst en alle transacties in euro's. Het wordt in de browser gemaakt (`box3ReportCsv`), met decimale komma voor Excel NL en bescherming tegen CSV-injectie.
+  - API:
+    - `GET /v1/billing`, `POST /v1/billing/checkout` (Stripe Checkout) en `POST /v1/billing/portal` (klantportaal);
+    - `POST /v1/billing/webhook` met handtekeningcontrole via de officiële SDK, idempotent, en de status altijd vers opgehaald bij Stripe.
+  - Opslag zonder persoonsgegevens: alleen Stripe-ID's en status (migratie `0003_billing.sql`).
+  - Config faalt dicht: geen live sleutel buiten productie, geen testsleutel in productie, alle drie de variabelen samen. Doorsturen alleen naar `checkout.stripe.com` en `billing.stripe.com`.
+  - Nieuwe dependency `stripe` 22.6.2 (MIT, geen dependencies).
+  - Nieuwe control CONS-3 (juridische toets vóór activeren, o.a. art. 7:236 BW). Runbook `docs/runbooks/stripe-testen.md`. Privacyverklaring en voorwaarden (concept) bijgewerkt.
+
 ### Gewijzigd (2026-10-14, supply chain)
 - **Dependabot-cooldown van 7 dagen** voor npm, GitHub Actions en de Vercel CLI. De bestaande regel "alleen versies die minstens 7 dagen oud zijn" hangt zo niet meer af van discipline; security-updates komen direct.
 - `VERCEL_TELEMETRY_DISABLED=1` in release en noodstop.

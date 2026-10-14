@@ -26,19 +26,27 @@ export function Voorwaarden() {
 
       <h2>4. Aansprakelijkheid</h2>
       <p>
-        De dienst is gratis. Voor zover de wet dat toestaat, is onze aansprakelijkheid voor schade door het gebruik van de rekenhulp
+        De rekenhulp is gratis; voor het aangifterapport betaal je een abonnement. Voor zover de wet dat toestaat, is onze aansprakelijkheid voor schade door het gebruik van de rekenhulp
         beperkt tot [BEDRAG / het bedrag dat je in de afgelopen twaalf maanden aan ons hebt betaald]. Deze beperking geldt niet bij
         opzet of bewuste roekeloosheid van ons of onze leidinggevenden, en doet geen afbreuk aan rechten die je als consument op
         grond van dwingend recht hebt, waaronder de regels over productaansprakelijkheid.
       </p>
 
-      <h2>5. Beschikbaarheid</h2>
+      <h2>5. Abonnement op het aangifterapport</h2>
+      <ul>
+        <li>Het abonnement kost € 35 per jaar [incl. btw / geen btw (KOR)] en wordt betaald via Stripe.</li>
+        <li>Je kunt binnen 14 dagen na het afsluiten zonder opgave van reden opzeggen; je krijgt dan het volledige bedrag terug.</li>
+        <li>Opzeggen kan altijd via "Abonnement beheren". [Na het eerste jaar: maandelijks opzegbaar met terugbetaling van het te veel betaalde, art. 7:236 BW: laten toetsen.]</li>
+        <li>De gratis rekenhulp blijft beschikbaar, ook zonder abonnement.</li>
+      </ul>
+
+      <h2>6. Beschikbaarheid</h2>
       <p>
         We kunnen de dienst tijdelijk uitschakelen, bijvoorbeeld bij een beveiligingsprobleem of als een berekening onjuist blijkt. We
         melden dit dan op de website.
       </p>
 
-      <h2>6. Toepasselijk recht</h2>
+      <h2>7. Toepasselijk recht</h2>
       <p>
         Op deze voorwaarden is Nederlands recht van toepassing. Als consument kun je een geschil ook voorleggen aan de bevoegde rechter
         in je woonplaats.

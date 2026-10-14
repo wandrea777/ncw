@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ASSETS,
   SUPPORTED_YEARS,
   berekenBox3,
+  box3ReportCsv,
   checkAddress,
   fetchBitcoinHistory,
   fetchDailyEurPrices,
@@ -13,12 +14,15 @@ import {
   valueAssetYear,
   type AddressHistory,
   type AssetYearResult,
+  type Box3Input,
+  type Box3Result,
   type Chain,
   type IncomingClass,
   type PriceSeries,
 } from "@ncw/core";
 import { fmtDate, fmtEur, fmtNum, fmtPct, shortAddr } from "../lib/format";
 import { looksLikeSecret } from "../lib/secrets";
+import { ApiError, billing as fetchBilling, openBillingPortal, startCheckout, type Billing } from "../lib/api";
 
 interface Entry {
   address: string;
@@ -42,7 +46,7 @@ const OVERIG_VELDEN = [
 
 type OverigKey = (typeof OVERIG_VELDEN)[number][0];
 
-export function Tool({ disabled, initialAddresses = [] }: { disabled: boolean; initialAddresses?: Array<{ address: string; chain: Chain }> }) {
+export function Tool({ disabled, initialAddresses = [], premium = false }: { disabled: boolean; initialAddresses?: Array<{ address: string; chain: Chain }>; premium?: boolean }) {
   const defaultYear = SUPPORTED_YEARS.filter((y) => y < new Date().getUTCFullYear()).at(-1) ?? SUPPORTED_YEARS[0]!;
   const [year, setYear] = useState<number>(defaultYear);
   const [input, setInput] = useState("");
@@ -126,15 +130,16 @@ export function Tool({ disabled, initialAddresses = [] }: { disabled: boolean; i
   const overigNum = Object.fromEntries(Object.entries(overig).map(([k, v]) => [k, parseEur(v)])) as Record<OverigKey, number>;
   const overigInvalid = Object.values(overigNum).some((n) => Number.isNaN(n));
 
-  const result =
+  const box3Input: Box3Input | null =
     fetched && !overigInvalid
-      ? berekenBox3({
+      ? {
           year: fetched.year,
           ...overigNum,
           cryptoBegin: assetResults.reduce((a, r) => a + r.valueBegin, 0),
           cryptoWerkelijkRendement: assetResults.reduce((a, r) => a + r.werkelijkRendement, 0),
-        })
+        }
       : null;
+  const result = box3Input ? berekenBox3(box3Input) : null;
 
   return (
     <div className="tool">
@@ -337,11 +342,89 @@ export function Tool({ disabled, initialAddresses = [] }: { disabled: boolean; i
             {assetResults.some((r) => r.indicatief) && <li><strong>Lopend jaar: de uitkomst verandert nog.</strong></li>}
           </ul>
           <button onClick={() => window.print()}>Afdrukken of opslaan als PDF</button>
+          {premium && box3Input && <ReportPanel input={box3Input} result={result} assets={assetResults} />}
           <p className="disclaimer">
             Dit is een rekenhulp op basis van publieke blockchaindata en jouw eigen invoer, geen belastingadvies. Data van derden kan
             onvolledig zijn. Controleer de uitkomst voordat je aangifte doet of bezwaar maakt.
           </p>
         </section>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Het aangifterapport (CSV) is het betaalde deel van de rekenhulp (ADR-0016). Het rapport wordt in de browser gemaakt;
+ * de server weet alleen óf je een abonnement hebt. Afdrukken blijft gratis.
+ */
+function ReportPanel({ input, result, assets }: { input: Box3Input; result: Box3Result; assets: AssetYearResult[] }) {
+  const [status, setStatus] = useState<Billing | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = () =>
+    fetchBilling()
+      .then((b) => (setStatus(b), setError(null)))
+      .catch(() => setError("Je abonnement kon niet worden opgehaald."));
+  useEffect(() => {
+    void load();
+    // Terug van Stripe: de bevestiging (webhook) kan een paar seconden later binnenkomen.
+    const onFocus = () => void load();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, []);
+
+  function download() {
+    const csv = box3ReportCsv({ input, result, assets, generatedAt: new Date() });
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kern-box3-${input.year}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  async function go(action: () => Promise<string>) {
+    setBusy(true);
+    setError(null);
+    try {
+      window.location.assign(await action());
+    } catch (e) {
+      setError(e instanceof ApiError && e.code === "already_subscribed" ? "Je hebt al een abonnement." : "Doorsturen naar Stripe is mislukt. Probeer het opnieuw.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="report-panel">
+      <h3>Rapport voor je aangifte</h3>
+      {error && <p className="error" role="alert">{error}</p>}
+      {status === null && !error && <p className="muted small">Abonnement controleren…</p>}
+      {status && !status.enabled && <p className="muted small">Het aangifterapport komt binnenkort beschikbaar.</p>}
+      {status?.enabled && status.premium && (
+        <>
+          <p className="muted small">
+            Een CSV met de waarden op de peildata, je overige vermogen, de uitkomst en alle transacties met hun waarde in euro's.
+            Gemaakt in je browser; er gaat niets naar KERN.
+          </p>
+          <button className="primary" onClick={download}>Rapport downloaden (CSV)</button>{" "}
+          <button className="link" onClick={() => go(openBillingPortal)} disabled={busy}>Abonnement beheren</button>
+          {status.currentPeriodEnd && (
+            <p className="muted small">
+              {status.cancelAtPeriodEnd ? "Opgezegd; loopt af op" : "Wordt verlengd op"} {fmtDate(Date.parse(status.currentPeriodEnd))}.
+            </p>
+          )}
+        </>
+      )}
+      {status?.enabled && !status.premium && (
+        <>
+          <p className="muted small">
+            Download een overzicht per peildatum met alle transacties in euro's, handig voor je aangifte of je adviseur.
+            € 35 per jaar, opzeggen kan altijd. Je betaalt bij Stripe; KERN ziet je betaalgegevens niet.
+          </p>
+          <button className="primary" onClick={() => go(startCheckout)} disabled={busy}>Abonneren via Stripe</button>{" "}
+          <button className="link" onClick={() => void load()}>Al betaald? Status vernieuwen</button>
+        </>
       )}
     </div>
   );

@@ -14,11 +14,15 @@ import { rateLimit } from "./lib/ratelimit.ts";
 import { registerAuthRoutes } from "./routes/auth.ts";
 import { registerOrgRoutes } from "./routes/orgs.ts";
 import { registerVaultRoutes } from "./routes/vaults.ts";
+import { WEBHOOK_PATH, registerBillingRoutes } from "./routes/billing.ts";
+import type { BillingProvider } from "./billing/provider.ts";
 
 export interface Deps {
   db: Db;
   cfg: Config;
   passkeys: PasskeyService;
+  /** Stripe (ADR-0016). Ontbreekt of `null`: betalen staat uit, de endpoints geven 503. */
+  billing?: BillingProvider | null;
   /** Haalt het client-IP op; alleen gebruikt voor rate limiting, nooit opgeslagen. */
   clientIp?: (c: Context) => string;
   log?: (entry: Record<string, unknown>) => void;
@@ -74,8 +78,10 @@ export function createApp(deps: Deps) {
   app.use("*", bodyLimit({ maxSize: 256 * 1024, onError: () => { throw new ApiError(413, "too_large", "Verzoek te groot."); } }));
 
   // CSRF: elke wijzigende request moet van onze eigen origin komen (naast SameSite=Strict cookies).
+  // Enige uitzondering: de Stripe-webhook (server-naar-server, geen cookies, geauthenticeerd met een handtekening).
   app.use("/v1/*", async (c, next) => {
-    if (UNSAFE.has(c.req.method) && c.req.header("origin") !== cfg.origin) {
+    const stripeWebhook = c.req.method === "POST" && c.req.path === WEBHOOK_PATH;
+    if (UNSAFE.has(c.req.method) && !stripeWebhook && c.req.header("origin") !== cfg.origin) {
       throw new ApiError(403, "bad_origin", "Verzoek van onbekende herkomst geweigerd.");
     }
     await next();
@@ -99,6 +105,7 @@ export function createApp(deps: Deps) {
   for (const p of ["/v1/orgs", "/v1/orgs/*", "/v1/vaults/*", "/v1/proposals/*", "/v1/invitations/*"]) app.use(p, requireSession(db, cfg));
   registerOrgRoutes(app, deps);
   registerVaultRoutes(app, deps);
+  registerBillingRoutes(app, { ...deps, billing: deps.billing ?? null });
 
   app.doc31("/v1/openapi.json", {
     openapi: "3.1.0",

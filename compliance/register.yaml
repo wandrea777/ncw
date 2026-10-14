@@ -159,7 +159,7 @@ verplichtingen:
         beschrijving: "De build bevat geen analytics of trackers."
       - id: AVG-3
         type: handmatig
-        beschrijving: "Privacyverklaring jaarlijks herzien en verwerkersovereenkomst (DPA) met de hostingpartij (nu Vercel, ADR-0011) gecontroleerd."
+        beschrijving: "Privacyverklaring jaarlijks herzien en verwerkersovereenkomst (DPA) met de hostingpartij (nu Vercel, ADR-0011) gecontroleerd. Stripe (ADR-0016) is zelfstandig verantwoordelijke voor betaalgegevens; KERN bewaart alleen Stripe-ID's en de abonnementsstatus."
         interval: 365
         laatstGecontroleerd: null
 
@@ -186,6 +186,11 @@ verplichtingen:
         type: handmatig
         beschrijving: "Voorwaarden en privacyverklaring getoetst door een jurist."
         interval: 730
+        laatstGecontroleerd: null
+      - id: CONS-3
+        type: handmatig
+        beschrijving: "Abonnement (ADR-0016) vóór activeren getoetst: herroepingsrecht 14 dagen, geen stilzwijgende jaarlijkse verlenging zonder maandelijkse opzegging na het eerste jaar (art. 7:236 BW), opzeggen even makkelijk als afsluiten, totaalprijs incl. eventuele btw (KOR), KvK-inschrijving. Tot die tijd geen Stripe-variabelen in productie."
+        interval: 365
         laatstGecontroleerd: null
 
   - id: RECLAME

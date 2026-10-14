@@ -180,3 +180,8 @@ a.primary-cta { text-decoration: none; }
 .receive-own summary { cursor: pointer; color: var(--forest); min-height: 44px; display: flex; align-items: center; }
 .receive-own .address-box { margin: 6px 0 10px; }
 .kv + .dialog-note, .kv + .primary-cta { margin-top: 16px; }
+/* Box 3-aangifterapport (ADR-0016): zelfde tokens als de kaarten van de rekenhulp. */
+.report-panel { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+.report-panel h3 { font-family: Georgia, serif; font-size: 20px; font-weight: 400; margin: 0 0 8px; }
+.report-panel button.link { font-size: 12px; color: var(--forest); }
+@media print { .report-panel { display: none; } }

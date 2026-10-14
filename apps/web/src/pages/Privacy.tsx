@@ -79,6 +79,15 @@ export function Privacy() {
         analytics, ook niet die van Vercel.
       </p>
 
+      <h2>Abonnement en betalen (Stripe)</h2>
+      <p>
+        Neem je een abonnement op het Box 3-rapport, dan ga je naar de betaalpagina van Stripe (Stripe Payments Europe Ltd.,
+        Ierland). Stripe verwerkt je e-mailadres, betaalgegevens en facturen als zelfstandige verantwoordelijke; zie hun
+        privacyverklaring. KERN bewaart alleen een Stripe-klantnummer, het abonnementsnummer, de status en de einddatum van de
+        periode, gekoppeld aan je account. Geen e-mailadres, naam of betaalgegevens. Het rapport zelf wordt in je browser gemaakt;
+        adressen en bedragen gaan niet naar KERN of Stripe.
+      </p>
+
       <h2>Je rechten</h2>
       <p>
         Je kunt je accountgegevens (naam, passkeys, sessies) inzien in het beveiligingscentrum van je wallet. Inzage, correctie

@@ -19,3 +19,4 @@ Elke belangrijke keuze wordt vastgelegd als ADR: context, besluit, alternatieven
 | 0013 | [Web-wallet: het v0-ontwerp gekoppeld aan API en rekenkern](0013-web-wallet-frontend.md) | Aangenomen |
 | 0014 | [Verdienen aan kopen via een partner met MiCA-vergunning](0014-verdienmodel-kopen-via-partner.md) | Aangenomen (juridische toets vóór activeren) |
 | 0015 | [Versturen met een Ledger in de browser (Bitcoin, alleen testnet)](0015-versturen-met-ledger-web.md) | Aangenomen |
+| 0016 | [Abonnement op het Box 3-rapport via Stripe](0016-abonnement-box3-stripe.md) | Aangenomen (juridische toets vóór activeren) |

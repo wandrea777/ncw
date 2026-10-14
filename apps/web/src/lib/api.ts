@@ -105,3 +105,36 @@ export function authErrorKey(e: unknown): "auth.cancelled" | "auth.unsupported" 
   if (name === "NotSupportedError") return "auth.unsupported";
   return null;
 }
+
+/** Abonnement voor het Box 3-rapport (ADR-0016). */
+export interface Billing {
+  enabled: boolean;
+  premium: boolean;
+  status: string | null;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+export const billing = () => call<Billing>("GET", "/v1/billing");
+
+/**
+ * Alleen doorsturen naar Stripe zelf (https, exacte host). Zo kan een gecompromitteerde of verkeerd ingestelde
+ * API de gebruiker niet naar een nagemaakte betaalpagina sturen.
+ */
+export function isStripeRedirect(url: string, host: "checkout.stripe.com" | "billing.stripe.com"): boolean {
+  try {
+    const u = new URL(url);
+    return u.protocol === "https:" && u.hostname === host && u.port === "" && u.username === "" && u.password === "";
+  } catch {
+    return false;
+  }
+}
+
+async function stripeRedirect(path: string, host: "checkout.stripe.com" | "billing.stripe.com"): Promise<string> {
+  const { url } = await call<{ url: string }>("POST", path);
+  if (!isStripeRedirect(url, host)) throw new ApiError(0, "bad_redirect", "Onverwacht betaaladres.");
+  return url;
+}
+
+export const startCheckout = () => stripeRedirect("/v1/billing/checkout", "checkout.stripe.com");
+export const openBillingPortal = () => stripeRedirect("/v1/billing/portal", "billing.stripe.com");
