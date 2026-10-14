@@ -2,8 +2,8 @@
   {
     "host": "https://mempool.space",
     "partij": "mempool.space (The Mempool Open Source Project)",
-    "doel": "Ophalen van publieke Bitcoin-transacties en saldi",
-    "gegevens": "Het Bitcoin-adres dat je invoert en je IP-adres (technisch noodzakelijk voor elk internetverzoek)",
+    "doel": "Ophalen van publieke Bitcoin-transacties en saldi; bij versturen met een Ledger (testnet): de adressen van je Ledger-account zoeken en de ondertekende transactie uitzenden",
+    "gegevens": "Het Bitcoin-adres dat je invoert en je IP-adres (technisch noodzakelijk voor elk internetverzoek). Bij versturen: de adressen van je Ledger-account (mempool.space kan zien dat ze bij elkaar horen) en je transactie",
     "doorgifteBuitenEER": "Mogelijk; zie het privacybeleid van de partij"
   },
   {

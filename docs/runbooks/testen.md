@@ -46,9 +46,30 @@ Dit zijn adressen van onbekenden op de publieke blockchain. Je ziet hun saldo, m
    ```
 3. Herstart `npm run dev`. **Geld toevoegen** opent dan de testomgeving van Ramp, waar geen echt geld wordt afgeschreven.
 
-## 5. Wat je kunt testen
+## 5. Versturen met een Ledger (testnet4)
+
+Er staat geen echt geld op het spel: KERN weigert mainnet-adressen en de Ledger-app "Bitcoin" (ADR-0015, control MICA-4).
+
+1. **Ledger Live** → Instellingen → Experimenteel → **Ontwikkelaarsmodus** aan. Installeer daarna in My Ledger de app **Bitcoin Test** (minimaal 2.1).
+2. Sluit Ledger Live af: het mag de USB-verbinding niet bezet houden.
+3. Open KERN in **Chrome, Edge of Brave** (WebHID; Safari en Firefox ondersteunen het niet). Ontgrendel je Ledger en open **Bitcoin Test**.
+4. **Versturen** → **Verbind je Ledger** → kies je Ledger in de kiezer van de browser.
+5. Klap **Testnet-coins ontvangen op deze Ledger** open. Klik op **Toon dit adres op mijn Ledger** en controleer dat het adres op het scherm teken voor teken gelijk is.
+6. Vraag testnet4-coins aan bij een faucet (zoek op "testnet4 faucet"). Wacht op één bevestiging; onbevestigde coins worden niet uitgegeven.
+7. Open Versturen opnieuw en stuur een klein bedrag (bijv. `0,0001`) terug naar de faucet of naar een tweede eigen adres. Controleer op je Ledger het adres, het bedrag en de vergoeding, en keur goed.
+8. De link naar mempool.space/testnet4 toont je transactie.
+
+**Ook testen:**
+- weigeren op de Ledger → "Geweigerd op je Ledger. Er is niets verstuurd.";
+- de app "Bitcoin" (mainnet) open → aparte melding;
+- Ledger vergrendeld → "Je Ledger is vergrendeld";
+- een `bc1…`-adres → "Dit is een mainnet-adres";
+- een adres dat aan begin en eind lijkt op een eigen adres → waarschuwing.
+
+## 6. Wat je kunt testen
 
 - Registreren, uitloggen, inloggen, en "Uitloggen en dit apparaat wissen".
 - Saldo in euro's, de grafiek (1W/1M/1Y/ALL), bezittingen, activiteit.
 - Ontvangen (QR), Box 3, beveiligingscentrum (je passkeys), NL/EN, mobiel (maak het venster smal).
+- Versturen met een Ledger op testnet4 (§5).
 - Een herstelzin plakken bij Adres toevoegen: de app waarschuwt en wist de invoer.

@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./send/bitcoin": "./src/send/bitcoin.ts"
   },
   "scripts": {
     "build": "tsc --noEmit -p .",
@@ -13,7 +14,9 @@
   },
   "dependencies": {
     "@noble/hashes": "2.4.0",
-    "@scure/base": "2.4.0"
+    "@scure/base": "2.4.0",
+    "@scure/bip32": "2.4.0",
+    "@scure/btc-signer": "2.4.1"
   },
   "devDependencies": {
     "typescript": "7.0.2",

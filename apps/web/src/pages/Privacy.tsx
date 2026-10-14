@@ -53,6 +53,15 @@ export function Privacy() {
         maken. Een geautomatiseerde controle zorgt dat deze lijst en het beleid altijd gelijk zijn.
       </p>
 
+      <h2>Versturen met een Ledger (testnet)</h2>
+      <p>
+        Verstuur je met een Ledger, dan vraagt je browser aan het apparaat de publieke sleutel van je account. Daarmee berekent de
+        browser je adressen en zoekt die op bij mempool.space; zo kan mempool.space zien dat die adressen bij elkaar horen. De
+        browser bouwt de transactie, je Ledger ondertekent hem en je browser zendt hem rechtstreeks via mempool.space uit. De
+        publieke sleutel, je adressen en de transactie gaan niet naar de KERN-server en worden niet bewaard; ze verdwijnen als je de
+        dialoog sluit.
+      </p>
+
       <h2>Kopen via een partner</h2>
       <p>
         Kies je "Geld toevoegen", dan opent de site van een partner met een MiCA-vergunning in een nieuw tabblad. In die link staan

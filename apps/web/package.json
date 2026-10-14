@@ -19,8 +19,11 @@
     "vitest": "5.0.4"
   },
   "dependencies": {
+    "@ledgerhq/hw-transport-webhid": "6.36.0",
+    "@ledgerhq/ledger-bitcoin": "0.3.1",
     "@ncw/core": "0.1.0",
     "@simplewebauthn/browser": "14.0.0",
+    "buffer": "6.0.3",
     "lucide-react": "1.17.0",
     "qrcode-generator": "2.0.4",
     "react": "19.3.0",
