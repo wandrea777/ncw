@@ -11,10 +11,12 @@ Zonder Stripe-variabelen staat betalen uit en toont de rekenhulp "komt binnenkor
    - Checkout Sessions: schrijven
    - Customer portal: schrijven
    - Subscriptions: lezen
+   - Prices: lezen
 
    Kopieer de `rk_test_…`-sleutel.
-4. **Settings → Billing → Customer portal**: zet opzeggen aan (aan het einde van de periode) en het bijwerken van de betaalmethode.
-5. Installeer de Stripe CLI en log in:
+4. **Settings → Billing → Customer portal**: zet opzeggen aan (aan het einde van de periode) en het bijwerken van de betaalmethode. Zet wisselen van product of plan **uit**.
+5. **Settings → Checkout → Limit customers to one subscription** aan (tegen dubbel afsluiten in twee tabbladen).
+6. Installeer de Stripe CLI en log in:
    ```bash
    stripe login
    ```
@@ -41,11 +43,15 @@ npm run dev
 
 1. Log in (runbook `testen.md` §2) en ga naar **Box 3**. Bereken iets; onder de uitkomst staat **Rapport voor je aangifte**.
 2. **Abonneren via Stripe** → betaal met testkaart `4242 4242 4242 4242` (elke toekomstige datum, elke CVC), of met iDEAL in testmodus.
-3. Je komt terug in KERN; na hooguit een paar seconden (webhook) verschijnt **Rapport downloaden (CSV)**. Open het in Excel of Numbers.
+3. Je komt terug in KERN op het tabblad Box 3. De app synchroniseert met Stripe en probeert het een halve minuut opnieuw. Bereken je jaar; daarna verschijnen **Rapport downloaden (CSV)** en **Rapport afdrukken of als PDF**. Open de CSV in Excel of Numbers.
 4. **Abonnement beheren** → zeg op in het portaal. Het rapport blijft beschikbaar tot de einddatum.
 5. Ook testen:
    - testkaart `4000 0000 0000 0341` (betaling faalt later): status `past_due`, geen rapport;
    - `stripe trigger customer.subscription.deleted`.
+
+## Account verwijderen (AVG-verzoek)
+
+Eerst bij Stripe: zoek de klant via het `cus_…`-nummer (`SELECT stripe_customer_id FROM billing_customers WHERE user_id = …`), zeg het abonnement **direct** op en verwijder eventueel de klant. Pas daarna het KERN-account verwijderen. Andersom blijft Stripe innen.
 
 ## Terugbetalen (herroepingsrecht)
 

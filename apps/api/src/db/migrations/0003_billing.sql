@@ -13,6 +13,8 @@ CREATE TABLE subscriptions (
   status                  text NOT NULL CHECK (status IN ('incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid', 'paused')),
   current_period_end      timestamptz,
   cancel_at_period_end    boolean NOT NULL DEFAULT false,
+  -- Bevat het abonnement onze prijs (STRIPE_PRICE_ID)? Alleen dan premium; een ander of later product telt niet.
+  price_ok                boolean NOT NULL,
   updated_at              timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX subscriptions_user_idx ON subscriptions(user_id);
@@ -23,3 +25,4 @@ CREATE TABLE stripe_events (
   type          text NOT NULL,
   processed_at  timestamptz NOT NULL DEFAULT now()
 );
+CREATE INDEX stripe_events_processed_idx ON stripe_events(processed_at);

@@ -35,7 +35,7 @@ import { BuyDialog } from "./BuyDialog";
 import { Tool } from "../pages/Tool";
 import { usePortfolio, type Portfolio } from "../lib/usePortfolio";
 import { loadWatched, saveWatched, type WatchedAddress } from "../lib/storage";
-import { passkeys as fetchPasskeys, revokeOtherSessions, type Me, type Passkey } from "../lib/api";
+import { billingReturn, passkeys as fetchPasskeys, revokeOtherSessions, type Me, type Passkey } from "../lib/api";
 import { useDismiss } from "../lib/useDismiss";
 import { formatAmount, formatEur, formatPct, splitEur } from "../lib/format";
 
@@ -62,7 +62,13 @@ function initials(name: string) {
 
 export function Dashboard({ me, onSignOut }: { me: Me; onSignOut(wipe: boolean): void }) {
   const { t, lang, setLang, locale } = useI18n();
-  const [tab, setTab] = useState<Tab>("overview");
+  // Terug van Stripe: direct naar het belastingtabblad, en de parameter uit de adresbalk halen.
+  const [stripeReturn] = useState(() => {
+    const r = billingReturn(window.location.href);
+    if (r.returned) window.history.replaceState(null, "", r.cleaned);
+    return r.returned;
+  });
+  const [tab, setTab] = useState<Tab>(stripeReturn ? "tax" : "overview");
   const [period, setPeriod] = useState<Period>("1M");
   const [hidden, setHidden] = useState(false);
   const [watched, setWatched] = useState<WatchedAddress[]>(() => loadWatched(me.user.id));
@@ -244,7 +250,7 @@ export function Dashboard({ me, onSignOut }: { me: Me; onSignOut(wipe: boolean):
               </>
             )}
             {tab === "activity" && <div className="full-list"><Activity items={(data?.items ?? []).slice(0, 200)} data={data} eur={eur} pending={pending} /></div>}
-            {tab === "tax" && <Tool disabled={false} initialAddresses={watched} premium />}
+            {tab === "tax" && <Tool disabled={false} initialAddresses={watched} premium returnedFromStripe={stripeReturn} />}
             {tab === "security" && <SecurityTab me={me} onToast={notify} />}
           </section>
         )}

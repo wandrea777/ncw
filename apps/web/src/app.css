@@ -185,3 +185,15 @@ a.primary-cta { text-decoration: none; }
 .report-panel h3 { font-family: Georgia, serif; font-size: 20px; font-weight: 400; margin: 0 0 8px; }
 .report-panel button.link { font-size: 12px; color: var(--forest); }
 @media print { .report-panel { display: none; } }
+.notice { border-left: 2px solid var(--forest); padding: 8px 0 8px 12px; font-size: 13px; color: var(--ink); margin: 0 0 18px; }
+/* Printweergave van het betaalde rapport (via een portal in <body>): op het scherm onzichtbaar; bij afdrukken alleen dit. */
+.report-print { display: none; }
+@media print {
+  body.printing-report > :not(.report-print) { display: none !important; }
+  body.printing-report .report-print { display: block; font: 11px/1.4 Arial, sans-serif; color: #000; }
+  .report-print h1 { font-family: Georgia, serif; font-size: 20px; font-weight: 400; }
+  .report-print table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; }
+  .report-print th, .report-print td { border-bottom: 1px solid #ccc; padding: 3px 6px; text-align: left; vertical-align: top; }
+  .report-print .num { text-align: right; white-space: nowrap; }
+  .report-print .mono { font-family: monospace; font-size: 9px; word-break: break-all; }
+}

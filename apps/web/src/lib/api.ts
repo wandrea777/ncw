@@ -113,9 +113,33 @@ export interface Billing {
   status: string | null;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
+  /** Zoals Stripe de prijs kent (centen), zodat de UI nooit een ander bedrag noemt dan er wordt afgeschreven. */
+  price: { amount: number; currency: string; interval: string } | null;
 }
 
 export const billing = () => call<Billing>("GET", "/v1/billing");
+/** Haalt de status opnieuw op bij Stripe (na terugkeer van de betaalpagina of een gemiste webhook). */
+export const syncBilling = () => call<Billing>("POST", "/v1/billing/sync");
+
+/** "€ 35,00 per jaar" uit de prijs van Stripe. */
+export function formatPrice(p: NonNullable<Billing["price"]>): string {
+  const amount = new Intl.NumberFormat("nl-NL", { style: "currency", currency: p.currency.toUpperCase() }).format(p.amount / 100);
+  const per = { year: "per jaar", month: "per maand", week: "per week", day: "per dag" }[p.interval] ?? `per ${p.interval}`;
+  return `${amount} ${per}`;
+}
+
+const RETURN_PARAM = "abonnement";
+
+/**
+ * Terug van Stripe (`?abonnement=terug#/wallet`)? Geeft de schone URL terug (zonder de parameter, met hash), zodat een
+ * herlaadactie niet opnieuw als terugkeer telt.
+ */
+export function billingReturn(href: string): { returned: boolean; cleaned: string } {
+  const u = new URL(href);
+  const returned = u.searchParams.get(RETURN_PARAM) === "terug";
+  u.searchParams.delete(RETURN_PARAM);
+  return { returned, cleaned: u.toString() };
+}
 
 /**
  * Alleen doorsturen naar Stripe zelf (https, exacte host). Zo kan een gecompromitteerde of verkeerd ingestelde

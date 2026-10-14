@@ -14,6 +14,18 @@ Alle noemenswaardige wijzigingen. Formaat: [Keep a Changelog](https://keepachang
   - Config faalt dicht: geen live sleutel buiten productie, geen testsleutel in productie, alle drie de variabelen samen. Doorsturen alleen naar `checkout.stripe.com` en `billing.stripe.com`.
   - Nieuwe dependency `stripe` 22.6.2 (MIT, geen dependencies).
   - Nieuwe control CONS-3 (juridische toets vóór activeren, o.a. art. 7:236 BW). Runbook `docs/runbooks/stripe-testen.md`. Privacyverklaring en voorwaarden (concept) bijgewerkt.
+  - **Na de reviews** ([QA](docs/qa/2026-10-14-abonnement.md)):
+    - geen dubbel abonnement (lokale en live controle bij Stripe);
+    - webhook onder een lock per abonnement (race getest op echte PostgreSQL);
+    - herstel via `POST /v1/billing/sync`;
+    - premium alleen bij onze prijs en een lopende periode;
+    - prijs in de UI komt van Stripe;
+    - geen gebruikers-ID meer naar Stripe;
+    - `rk_live_` verplicht in productie;
+    - eigen rate-limit voor de webhook;
+    - printweergave van het rapport (betaald) en waarschuwingen, eindkoersen en crypto-totaal in het rapport;
+    - terugkeer van Stripe opent het Box 3-tabblad;
+    - eerlijkere copy over opzeggen en herroepen.
 
 ### Gewijzigd (2026-10-14, supply chain)
 - **Dependabot-cooldown van 7 dagen** voor npm, GitHub Actions en de Vercel CLI. De bestaande regel "alleen versies die minstens 7 dagen oud zijn" hangt zo niet meer af van discipline; security-updates komen direct.
