@@ -14,6 +14,11 @@ test("MICA-1: vangt API's die privésleutels maken of in software ondertekenen",
     "schnorr.sign(m, k)",
     "ECPair.fromWIF(w)",
     "if (key.privateKey) {}",
+    "tx.sign(pk);",
+    "c.sign(msg, key)",
+    "const pub = secp256k1.getPublicKey(sk);",
+    "obj['private' + 'Key']",
+    "const f = BIP32Factory(ecc); f.fromSeed(seed);",
     'const k = "tprv8ZgxMBicQKsPd7Uf69XL1XwhmjHopUGep8GuEiJDZmbQz6o58LninorQAfcKZWARbtRtfnLcJ5MQ2AtHcQJCCRUcMRvmDUjyEmNUWwx8UbK";',
   ]) {
     assert.equal(usesPrivateKeyApi(code), true, code);
@@ -23,7 +28,9 @@ test("MICA-1: vangt API's die privésleutels maken of in software ondertekenen",
 test("MICA-1: publieke sleutels, Ledger-ondertekening en uitleg in commentaar zijn toegestaan", () => {
   for (const code of [
     "const root = HDKey.fromExtendedKey(xpub, VERSIONS);",
-    "const sigs = await session.sign(psbt);",
+    "const sigs = await session.signOnDevice(psbt);",
+    "secp256k1.verify(sig, digest, pubkey, { format: 'der', prehash: false })",
+    "Math.sign(Number(o.delta)) !== Math.sign(Number(f.delta))",
     "app.signPsbt(psbt, policy, null)",
     "// Bitcoin WIF herkennen we als geheim",
     "/* privateKey komt hier nooit */ const x = 1;",

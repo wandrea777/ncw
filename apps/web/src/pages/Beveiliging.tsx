@@ -8,8 +8,9 @@ export function Beveiliging() {
       <h2>Hoe KERN is beveiligd</h2>
       <ul>
         <li>
-          <strong>Geen sleutels op het web.</strong> De web-wallet is alleen-lezen: je volgt publieke adressen. KERN vraagt,
-          ontvangt en bewaart nooit een herstelzin of privésleutel. Plakt iemand er per ongeluk een in, dan waarschuwt de app
+          <strong>Geen sleutels op het web.</strong> Op mainnet is de web-wallet alleen-lezen: je volgt publieke adressen.
+          Versturen kan alleen op het testnetwerk, met een Ledger: de sleutel blijft op het apparaat en je keurt elke
+          transactie goed op het scherm van de Ledger. KERN vraagt, ontvangt en bewaart nooit een herstelzin of privésleutel. Plakt iemand er per ongeluk een in, dan waarschuwt de app
           en wordt de invoer gewist.
         </li>
         <li>

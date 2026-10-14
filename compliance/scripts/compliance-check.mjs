@@ -12,7 +12,7 @@ import { join } from "node:path";
 import { parse } from "yaml";
 import { ROOT, read, exists, walk, loadIncidents, incidentStatus } from "./lib.mjs";
 import { diffHeaders, lintHeadersFile, lintVercelConfig, parseHeadersFile, vercelHeaders } from "./headers.mjs";
-import { HOT_WALLET_LIBS, NO_DIRECT_LIBS, usesPrivateKeyApi } from "./keyrules.mjs";
+import { HOT_WALLET_LIBS, NO_DIRECT_LIBS, stripComments, usesPrivateKeyApi } from "./keyrules.mjs";
 
 const RELEASE = process.argv.includes("--release");
 const results = []; // { check, level: "ok"|"warn"|"fail", msg }
@@ -116,7 +116,7 @@ checks["geen-sleutelbibliotheken"] = () => {
   const libs = HOT_WALLET_LIBS.filter((l) => deps.has(l));
   const direct = ["apps/web", "packages/core"].flatMap((ws) => Object.keys(JSON.parse(read(`${ws}/package.json`)).dependencies ?? {}));
   const directHits = NO_DIRECT_LIBS.filter((l) => direct.includes(l));
-  const src = [...walk("apps/web/src"), ...walk("packages/core/src")].filter((f) => /\.(tsx?|js)$/.test(f));
+  const src = [...walk("apps/web/src"), ...walk("packages/core/src")].filter((f) => /\.(tsx?|jsx?|mjs|cjs)$/.test(f));
   const apiHits = src.filter((f) => usesPrivateKeyApi(read(f)));
   const ledgerHits = src.filter((f) => /@ledgerhq\//.test(read(f)) && !f.endsWith("apps/web/src/lib/ledger.ts"));
   const problems = [
@@ -132,10 +132,16 @@ checks["geen-sleutelbibliotheken"] = () => {
 // MICA-4: tot een onafhankelijke audit alleen testnet (ADR-0012 volgorde, ADR-0015). Een overstap naar mainnet
 // moet bewust: deze check, de tests en de ADR veranderen dan mee.
 checks["alleen-testnet"] = () => {
-  const core = read("packages/core/src/send/bitcoin.ts");
+  const core = stripComments(read("packages/core/src/send/bitcoin.ts"));
   const web = read("apps/web/src/lib/ledger.ts");
   const problems = [];
-  if (!/network: TEST_NETWORK/.test(core) || /network: NETWORK\b/.test(core)) problems.push("transacties niet vast op TEST_NETWORK");
+  // NETWORK (mainnet) mag alleen voorkomen in de import, als type, en in de herkenning van mainnet-adressen.
+  const mainnetUses = core
+    .split("\n")
+    .filter((l) => /(?<!TEST_)\bNETWORK\b/.test(l))
+    .filter((l) => !/^import /.test(l.trim()) && !/typeof NETWORK/.test(l) && !/isValidFor\(candidate, NETWORK\)/.test(l));
+  if (mainnetUses.length) problems.push(`mainnet-netwerk gebruikt: ${mainnetUses.map((l) => l.trim()).join(" | ")}`);
+  if (!/network: TEST_NETWORK/.test(core)) problems.push("transacties niet vast op TEST_NETWORK");
   if (!core.includes('api: "https://mempool.space/testnet4/api"')) problems.push("API niet vast op testnet4");
   if (!core.includes('xpub.startsWith("tpub")')) problems.push("geen weigering van mainnet-sleutels");
   if (!web.includes('if (name !== "Bitcoin Test")')) problems.push('Ledger-app niet vast op "Bitcoin Test"');

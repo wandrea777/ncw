@@ -67,6 +67,7 @@ De versleuteling gebeurt in de client met een organisatiesleutel die per lid wor
 | Hosting web-app | Vercel, met Cloudflare Pages als uitwijk | [ADR-0011](../adr/0011-web-hosting-vercel.md) |
 | Sleutels per platform | Web nooit; app via Wallet Core native | [ADR-0012](../adr/0012-sleutelbeheer-per-platform.md) |
 | Web-wallet | v0-ontwerp (Vite), passkey-account via de API, data via `@ncw/core` in de browser, adressen alleen lokaal | [ADR-0013](../adr/0013-web-wallet-frontend.md) |
+| Versturen (web, testnet) | Ledger via WebHID; PSBT gebouwd en gecontroleerd in de browser (`@ncw/core/send/bitcoin`), ondertekend op het apparaat, uitgezonden via mempool.space. De server ziet niets. | [ADR-0015](../adr/0015-versturen-met-ledger-web.md) |
 
 ## Integraties (strategie)
 

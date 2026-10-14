@@ -4,7 +4,9 @@
  * (ADR-0012, ADR-0015). Alles is vastgezet op testnet: een mainnet-adres of -sleutel wordt geweigerd.
  */
 import { HDKey } from "@scure/bip32";
-import { Address, NETWORK, OutScript, TEST_NETWORK, Transaction, p2wpkh, selectUTXO } from "@scure/btc-signer";
+import { secp256k1 } from "@noble/curves/secp256k1.js";
+import { hash160 } from "@scure/btc-signer/utils.js";
+import { Address, NETWORK, OutScript, SigHash, TEST_NETWORK, Transaction, p2wpkh, selectUTXO } from "@scure/btc-signer";
 import { base64, hex } from "@scure/base";
 import type { FetchLike } from "../prices/binance";
 import { sleep, withRetry } from "../http";
@@ -22,8 +24,14 @@ const ACCOUNT_PATH_NUMS = [84 + H, 1 + H, 0 + H];
 /** Versiebytes van `tpub`/`tprv` (BIP-32, testnet). */
 const TESTNET_VERSIONS = { private: 0x04358394, public: 0x043587cf };
 export const GAP_LIMIT = 20;
-/** Vergoedingen boven deze grens weigeren we: dat is vrijwel altijd een fout of een aanval. */
-export const MAX_FEE_RATE = 1000n;
+/**
+ * Vergoedingen boven deze grenzen weigeren we: dat is vrijwel altijd een fout of een liegende fee-API. Het tarief én
+ * een absoluut bedrag, omdat veel invoer bij een toegestaan tarief toch een groot bedrag kan opleveren.
+ */
+export const MAX_FEE_RATE = 200n;
+export const MAX_FEE_SATS = 50_000n;
+/** Plafond voor de scan: een API die elk adres "gebruikt" noemt, mag geen eindeloze lus of onvindbaar wisselgeld geven. */
+export const MAX_SCAN_INDEX = 1000;
 /** Kleinste bedrag dat we naar één uitvoer sturen (dust-grens voor P2TR/P2WSH, de hoogste van SegWit). */
 export const MIN_SEND_SATS = 546n;
 
@@ -36,14 +44,19 @@ export type SendErrorCode =
   | "address-empty"
   | "address-mainnet"
   | "address-invalid"
+  | "address-own-change"
   | "amount-invalid"
   | "amount-too-small"
   | "insufficient-funds"
   | "fee-invalid"
+  | "fee-too-high"
+  | "scan-limit"
   | "account-invalid"
   | "plan-mismatch"
   | "utxo-mismatch"
   | "signature-mismatch"
+  | "broadcast-rejected"
+  | "broadcast-uncertain"
   | "network";
 
 export interface LedgerAccount {
@@ -190,6 +203,7 @@ export async function scanAccount(
   for (const change of [0, 1] as const) {
     let firstUnused: DerivedAddress | null = null;
     for (let index = 0, unusedInRow = 0; unusedInRow < gap; index++) {
+      if (index >= MAX_SCAN_INDEX) throw new SendError("scan-limit", "Meer adressen dan verwacht; scannen gestopt.");
       const a = derive(change, index);
       if (checked > 0 && delay) await sleep(delay);
       const info = await getJson<MempoolAddressInfo>(fetchFn, `${BTC_TESTNET.api}/address/${a.address}`);
@@ -203,7 +217,11 @@ export async function scanAccount(
       firstUnused = null;
       used.push(a);
       for (const u of await getJson<MempoolUtxo[]>(fetchFn, `${BTC_TESTNET.api}/address/${a.address}/utxo`)) {
-        utxos.push({ txid: u.txid, vout: u.vout, value: BigInt(u.value), confirmed: u.status.confirmed, owner: a });
+        // Kapotte of dubbele API-gegevens weigeren in plaats van ze door te geven aan de coin selection.
+        const valid = /^[0-9a-f]{64}$/.test(u.txid) && Number.isInteger(u.vout) && u.vout >= 0 && u.vout < 100_000 && Number.isSafeInteger(u.value) && u.value > 0;
+        if (!valid) throw new SendError("network", "Ongeldige UTXO-gegevens van het netwerk.");
+        if (utxos.some((x) => x.txid === u.txid && x.vout === u.vout)) continue;
+        utxos.push({ txid: u.txid, vout: u.vout, value: BigInt(u.value), confirmed: u.status?.confirmed === true, owner: a });
       }
     }
     next.push(firstUnused!);
@@ -273,6 +291,7 @@ export function planSend(req: SendRequest): Omit<SendPlan, "psbt"> & { tx: Trans
     bip32Derivation: [[u.owner.pubkey, { fingerprint: fpr, path: derivationPath(u.owner.change, u.owner.index) }]] as [Uint8Array, { fingerprint: number; path: number[] }][],
   }));
   const change = req.state.nextChange;
+  if (recipient === change.address) throw new SendError("address-own-change", "Dit is het wisselgeldadres van je Ledger.");
   const sel = selectUTXO(candidates, [{ address: recipient, amount: req.amount }], "default", {
     feePerByte: req.feeRate,
     changeAddress: change.address,
@@ -330,6 +349,7 @@ export function verifyPlan(tx: Transaction, want: { recipient: string; amount: b
   const vsize = estimateVsize(tx.inputsLength, tx.outputsLength);
   // Bovengrens: elke invoer P2WPKH en elke uitvoer zo groot als P2TR/P2WSH. Valt het wisselgeld onder de dust-grens,
   // dan gaat het naar de vergoeding; de marge van 2000 sat vangt dat op.
+  if (fee > MAX_FEE_SATS) throw new SendError("fee-too-high", `De netwerkvergoeding is hoger dan ${MAX_FEE_SATS} sat.`);
   if (fee <= 0n || fee > BigInt(vsize) * want.feeRate + 2000n) {
     throw new SendError("plan-mismatch", "De netwerkvergoeding is onverwacht hoog.");
   }
@@ -389,26 +409,56 @@ export function finalizeSigned(psbt: string, sigs: DeviceSignature[]): { hex: st
   for (const s of sigs) {
     if (seen.has(s.inputIndex) || s.inputIndex < 0 || s.inputIndex >= tx.inputsLength) throw new SendError("signature-mismatch", "Onverwachte handtekening.");
     seen.add(s.inputIndex);
-    const expected = tx.getInput(s.inputIndex).bip32Derivation?.[0]?.[0];
+    const input = tx.getInput(s.inputIndex);
+    const expected = input.bip32Derivation?.[0]?.[0];
     if (!expected || !equalBytes(expected, s.pubkey)) throw new SendError("signature-mismatch", "Handtekening van een onverwachte sleutel.");
+    if (!validSighashAll(tx, s.inputIndex, s.pubkey, s.signature, input.witnessUtxo?.amount)) {
+      throw new SendError("signature-mismatch", "Ongeldige handtekening of niet over de hele transactie (SIGHASH_ALL).");
+    }
     tx.updateInput(s.inputIndex, { partialSig: [[s.pubkey, s.signature]] });
   }
   tx.finalize();
   return { hex: tx.hex, txid: tx.id };
 }
 
-/** Zendt de transactie uit via mempool.space (rechtstreeks vanuit de browser; de KERN-server ziet hem nooit). */
+/**
+ * Zendt de transactie uit via mempool.space (rechtstreeks vanuit de browser; de KERN-server ziet hem nooit).
+ * Alleen een expliciete weigering (4xx) betekent zeker "niet verstuurd". Bij een netwerkfout, een 5xx of een ander
+ * teruggegeven ID kan de transactie wel zijn aangekomen: dan `broadcast-uncertain`, zodat de UI niet ten onrechte
+ * zegt dat er niets is verstuurd (en de gebruiker niet dubbel verstuurt).
+ */
 export async function broadcast(signed: { hex: string; txid: string }, rawFetch: typeof fetch = fetch): Promise<string> {
-  const res = await rawFetch(`${BTC_TESTNET.api}/tx`, { method: "POST", body: signed.hex, headers: { "content-type": "text/plain" } });
-  const body = (await res.text()).trim();
-  if (!res.ok) throw new SendError("network", `Uitzenden geweigerd door het netwerk: ${body.slice(0, 200)}`);
-  if (body !== signed.txid) throw new SendError("network", "Het netwerk gaf een ander transactie-ID terug.");
+  let res: Response;
+  try {
+    res = await rawFetch(`${BTC_TESTNET.api}/tx`, { method: "POST", body: signed.hex, headers: { "content-type": "text/plain" } });
+  } catch {
+    throw new SendError("broadcast-uncertain", "Geen antwoord van het netwerk.");
+  }
+  const body = (await res.text().catch(() => "")).trim();
+  if (res.status >= 400 && res.status < 500) throw new SendError("broadcast-rejected", `Geweigerd door het netwerk: ${body.slice(0, 200)}`);
+  if (!res.ok || body !== signed.txid) throw new SendError("broadcast-uncertain", "Onduidelijk antwoord van het netwerk.");
   return body;
 }
 
 /** Bovengrens van de virtuele grootte voor P2WPKH-invoer (68 vB) en uitvoer tot 43 vB (P2TR/P2WSH). */
 export function estimateVsize(inputs: number, outputs: number): number {
   return 11 + 68 * inputs + 43 * outputs;
+}
+
+/**
+ * Controleert (verifieert, maakt niets) dat de handtekening van het apparaat geldig is én de hele transactie dekt.
+ * Een andere sighash (bijv. NONE|ANYONECANPAY) zou iemand die de transactie doorgeeft de uitvoer laten wijzigen.
+ */
+function validSighashAll(tx: Transaction, idx: number, pubkey: Uint8Array, sig: Uint8Array, amount: bigint | undefined): boolean {
+  if (amount === undefined || sig.length < 9 || sig[sig.length - 1] !== SigHash.ALL) return false;
+  // BIP-143: de scriptCode van P2WPKH is het P2PKH-script van de sleutelhash.
+  const scriptCode = OutScript.encode({ type: "pkh", hash: hash160(pubkey) });
+  const digest = tx.preimageWitnessV0(idx, scriptCode, SigHash.ALL, amount);
+  try {
+    return secp256k1.verify(sig.subarray(0, -1), digest, pubkey, { format: "der", prehash: false });
+  } catch {
+    return false;
+  }
 }
 
 function equalBytes(a: Uint8Array, b: Uint8Array): boolean {

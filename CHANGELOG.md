@@ -11,9 +11,19 @@ Alle noemenswaardige wijzigingen. Formaat: [Keep a Changelog](https://keepachang
   - Mainnet-adressen, `xpub` en de Ledger-app "Bitcoin" worden geweigerd. Alleen bevestigde UTXO's worden uitgegeven. Eigen afleiding en apparaat worden vergeleken. Er is een waarschuwing tegen lijkende adressen (address poisoning).
   - Een eigen ontvangstadres kun je tonen op het scherm van de Ledger.
   - De Ledger- en transactiecode wordt lui geladen.
-- Nieuwe dependencies (motivatie in ADR-0015): `@scure/btc-signer`, `@scure/bip32`, `@ledgerhq/ledger-bitcoin`, `@ledgerhq/hw-transport-webhid`, `buffer`.
+- Nieuwe dependencies (motivatie in ADR-0015): `@scure/btc-signer`, `@scure/bip32`, `@noble/curves` (verifiëren), `@ledgerhq/ledger-bitcoin`, `@ledgerhq/hw-transport-webhid`, `buffer`.
 - Tests: rekenkern (BIP-84-testvector, invoer, scannen, plan, vorige transacties, handtekeningen, uitzenden), Ledger-koppeling (versies, foutcodes, apparaatkeuze) en de MICA-1-regels.
 - Runbook `docs/runbooks/testen.md` §5: testen met een echte Ledger op testnet4.
+- **Na de reviews** ([QA](docs/qa/2026-10-14-ledger-versturen.md)):
+  - handtekeningen van het apparaat worden geverifieerd en moeten SIGHASH_ALL zijn;
+  - vergoeding hooguit 200 sat/vB en absoluut 50.000 sat;
+  - scan met plafond, UTXO's gevalideerd en ontdubbeld;
+  - uitzenden onderscheidt "geweigerd" van "onzeker" (geen onterecht "niets verstuurd");
+  - een adres-mismatch is fataal;
+  - geen race bij dubbelklikken;
+  - de dialoog houdt de focus vast, heeft een vaste live region en fouten bij het veld, en vangt een mislukte lazy load op;
+  - MICA-1 strenger (elke `.sign(` in eigen code verboden) en `alleen-testnet` controleert elk gebruik van `NETWORK`;
+  - `npm audit signatures` in CI.
 
 ### Gewijzigd (2026-10-14, versturen met een Ledger)
 - **CSP met Trusted Types** (`require-trusted-types-for 'script'; trusted-types 'none'`) en `Permissions-Policy: hid=(self)`. Gecontroleerd op de productie-build: geen overtredingen.
