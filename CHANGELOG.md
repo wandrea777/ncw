@@ -4,6 +4,14 @@ Alle noemenswaardige wijzigingen. Formaat: [Keep a Changelog](https://keepachang
 
 ## [Onvoltooid]
 
+### Gewijzigd (2026-10-14, GitHub en hosting)
+- **GitHub-beveiliging aan** ([runbook](docs/runbooks/github-beveiligen.md)):
+  - branch protection op `main` (PR en check `ci` verplicht, ook voor beheerders, lineaire historie, geen force-push);
+  - tag-rulesets op `v*`: alleen de beheerder maakt release-tags, niemand verplaatst of verwijdert ze;
+  - secret scanning met push protection, Dependabot-securityupdates en private vulnerability reporting;
+  - Actions: alleen actions van GitHub, SHA-pinning verplicht.
+- **Hosting (ADR-0007, aanvulling):** de API draait in de testfase alleen lokaal in Docker. freevps.edu.pl is onderzocht en afgewezen (anonieme aanbieder, geen verwerkersovereenkomst mogelijk). Gratis alternatieven voor studenten staan in de ADR.
+
 ### Toegevoegd (2026-10-14)
 - **Geld toevoegen: kopen via een partner met MiCA-vergunning** (ADR-0014). Het gaat om doorverwijzing; KERN komt nooit aan geld of crypto.
   - Standaardpartner is Ramp Network (MiCA-CASP, Ierland), met vooringevuld adres. MoonPay (AFM-CASP) kan ook, maar zonder voorinvulling (zero-knowledge).

@@ -32,7 +32,7 @@ Zet op beide environments een **deployment branch policy**:
 - `production`: alleen tags `v*`, met verplichte reviewer (jij);
 - `noodstop`: alleen `main`, zonder wachttijd.
 
-Anders kan een workflow vanaf een willekeurige branch de token gebruiken. Zet in de repo-instellingen (de repo is openbaar) ook **secret scanning** en **push protection** aan, en **branch protection** op `main` (CI verplicht). Zet daarnaast een **tag-ruleset** op `v*`: alleen jij mag tags maken, ondertekend, en niemand mag ze verwijderen of verplaatsen.
+Anders kan een workflow vanaf een willekeurige branch de token gebruiken. Secret scanning, push protection, branch protection op `main` en de tag-rulesets op `v*` staan aan sinds 14 oktober 2026; zie [github-beveiligen.md](github-beveiligen.md). Ondertekende tags volgen zodra je een signing key hebt.
 
 ## Release (productie)
 

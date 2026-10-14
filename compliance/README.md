@@ -89,7 +89,7 @@ De nieuwe richtlijn legt de bewijslast deels bij de fabrikant. Wie relevant bewi
 
 ## 6. Eenmalige inrichting (door jou)
 
-1. [ ] Private GitHub-repo aanmaken en pushen; **branch protection** op `main` met CI als verplichte check.
+1. [x] GitHub-repo (openbaar) met **branch protection** op `main` en CI als verplichte check (14-10-2026, zie `docs/runbooks/github-beveiligen.md`).
 2. [ ] GitHub-app op je telefoon met meldingen aan voor issues (dat is je alarm).
 3. [ ] Cloudflare-account → Pages-project → secrets `CLOUDFLARE_API_TOKEN` en `CLOUDFLARE_ACCOUNT_ID`, en variabele `CF_PAGES_PROJECT`.
 4. [ ] Domein + `security@`-mailadres; vul `security.txt`, Privacy en Voorwaarden in.
