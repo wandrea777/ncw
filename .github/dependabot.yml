@@ -1,13 +1,18 @@
+# Cooldown: versie-updates pas als de nieuwe versie minstens 7 dagen oud is (supply chain: een gekaapte release wordt
+# meestal binnen dagen ontdekt). Security-updates negeren de cooldown en komen direct.
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /
     schedule: { interval: weekly }
+    cooldown: { default-days: 7 }
     open-pull-requests-limit: 5
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
+    cooldown: { default-days: 7 }
   - package-ecosystem: npm
     directory: /tools/vercel-cli
     schedule: { interval: weekly }
+    cooldown: { default-days: 7 }
     open-pull-requests-limit: 2
