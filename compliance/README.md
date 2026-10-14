@@ -37,7 +37,7 @@ Volledig overzicht: [`register.yaml`](register.yaml). Samengevat:
 | Wanneer | Wat | Bestand |
 |---|---|---|
 | Elke push / PR | Tests, typecheck, build, compliance-check, SBOM | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) |
-| Dagelijks 05:00 UTC | Kwetsbaarhedenscan + compliance in releasemodus → issue. Bij actief misbruik: CRA-incident automatisch aangemaakt en gecommit | [`security-watch.yml`](../.github/workflows/security-watch.yml) |
+| Dagelijks 05:00 UTC | Kwetsbaarhedenscan + compliance in releasemodus → issue. Bij actief misbruik: eerst een issue (het alarm), daarna het CRA-incidentbestand op een eigen branch; de PR open je zelf | [`security-watch.yml`](../.github/workflows/security-watch.yml) |
 | Elk uur | CRA-meldklok: < 12 uur of verstreken → issue (pushmelding via de GitHub-app) | [`incident-clock.yml`](../.github/workflows/incident-clock.yml) |
 | Tag `v*` | Strengste check, bewijsbundel als release-asset, deploy | [`release.yml`](../.github/workflows/release.yml) |
 | Handmatig (ook vanaf je telefoon) | Noodstop aan of uit binnen ~1 minuut | [`noodstop.yml`](../.github/workflows/noodstop.yml) |

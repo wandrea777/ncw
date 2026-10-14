@@ -13,7 +13,8 @@ De repository `wandrea777/ncw` is openbaar (open broncode, PLAN.md §5.3). Daard
 | 5 | **Code security:** Dependabot alerts, Dependabot security updates, secret scanning, push protection, private vulnerability reporting | ✅ aan |
 | 5a | Secret scanning voor niet-provider-patronen en validity checks | ➖ alleen met GitHub Advanced Security (betaald) |
 | 6 | **Actions:** alleen actions van GitHub zelf, SHA-pinning verplicht, workflow-token standaard *read*, workflows mogen geen PR's goedkeuren | ✅ aan |
-| 7 | **Secrets** (Vercel, later database en Stripe): alleen als secret in een environment met deployment branch policy en verplichte goedkeuring (`production`) | ✅ voor Vercel (zie [vercel-deploy.md](vercel-deploy.md)) |
+| 7 | **Environments:** `production` (verplichte reviewer, alleen tags `v*`) en `noodstop` (alleen `main`). Secrets (Vercel, later database en Stripe) **alleen op environment-niveau**, nooit op repo-niveau: een repo-secret maakt de environment automatisch aan, zonder reviewer of branch policy. | ⏳ **nog niet ingericht**, eerst doen vóór er een Vercel-secret komt (zie [vercel-deploy.md](vercel-deploy.md)) |
+| 8 | **CRA-alarm:** security watch maakt eerst een issue en zet het incidentbestand daarna op een branch. Een PR van de workflow-token mag niet en zou geen CI starten; die PR open je zelf. | ✅ |
 
 ## Controleren
 

@@ -54,7 +54,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
       issues: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -62,24 +61,14 @@ jobs:
         with:
           name: security-watch
           path: resultaat
-      - name: CRA-incident als pull request
-        if: needs.scan.outputs.vuln == '2'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          branch="cra-incident-$(date -u +%Y%m%d%H%M)"
-          git config user.name "ncw-compliance-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git checkout -b "$branch"
-          cp -r resultaat/compliance/incidents/. compliance/incidents/
-          git add compliance/incidents
-          git commit -m "CRA-incident automatisch aangemaakt door security watch"
-          git push origin "$branch"
-          gh pr create --title "🚨 CRA-incident: actief misbruikte kwetsbaarheid" --body "Zie compliance/README.md §4. Meldklok loopt." --head "$branch"
+      - name: Branchnaam voor het incident
+        id: naam
+        run: echo "branch=cra-incident-$(date -u +%Y%m%d%H%M)" >> "$GITHUB_OUTPUT"
       - name: Issue aanmaken
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           VULN: ${{ needs.scan.outputs.vuln }}
+          BRANCH: ${{ steps.naam.outputs.branch }}
         with:
           script: |
             const fs = require("fs");
@@ -89,7 +78,22 @@ jobs:
               : `Security/compliance-bevindingen ${new Date().toISOString().slice(0, 10)}`;
             const body = [
               urgent ? "**Er loopt een CRA-meldtermijn. Voer `npm run incident -- status` uit en volg compliance/README.md §4.**\n" : "",
+              urgent ? `Het incidentbestand staat op branch \`${process.env.BRANCH}\`. Open daar zelf een PR naar main: een PR van de workflow-token start geen CI en kan door de branch protection niet worden gemerged.\n` : "",
               "## Kwetsbaarheden\n```\n" + fs.readFileSync("resultaat/vuln.txt", "utf8").slice(-6000) + "\n```",
               "## Compliance (releasemodus)\n```\n" + fs.readFileSync("resultaat/comp.txt", "utf8").slice(-6000) + "\n```",
             ].join("\n");
             await github.rest.issues.create({ ...context.repo, title, body, labels: urgent ? ["CRA-incident", "security"] : ["compliance"] });
+      # Na het issue, zodat het alarm er altijd is, ook als pushen faalt. Geen PR via de workflow-token:
+      # die mag geen PR's maken (Actions-instelling) en zou geen CI starten.
+      - name: CRA-incident op een branch zetten
+        if: needs.scan.outputs.vuln == '2'
+        env:
+          BRANCH: ${{ steps.naam.outputs.branch }}
+        run: |
+          git config user.name "ncw-compliance-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          cp -r resultaat/compliance/incidents/. compliance/incidents/
+          git add compliance/incidents
+          git commit -m "CRA-incident automatisch aangemaakt door security watch"
+          git push origin "$BRANCH"

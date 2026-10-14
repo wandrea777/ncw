@@ -80,7 +80,8 @@
 | GitHub: branch protection, verplichte CI, tag-rulesets, alleen GitHub-actions met SHA-pin | ✅ (14-10-2026, [runbook](../runbooks/github-beveiligen.md)) |
 | GitHub: 2FA met passkey, signed commits | ⏳ eigenaar |
 | GitHub Actions vastpinnen op commit-SHA; `--ignore-scripts`; rechten per job | ✅ |
-| Secrets alleen in een secret manager, nooit in de repo; secret scanning en push protection aan | ✅ |
+| Secret scanning en push protection aan | ✅ |
+| Secrets alleen op environment-niveau (`production`, `noodstop`) met reviewer en branch policy | ⏳ environments nog aanmaken |
 | Externe pentest en cryptografische review vóór livegang | ⏳ |
 | Bug bounty / CVD-beleid | ✅ beleid, ⏳ programma |
 
