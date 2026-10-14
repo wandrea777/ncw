@@ -24,7 +24,7 @@
     "@ncw/core": "0.1.0",
     "@simplewebauthn/browser": "14.0.0",
     "buffer": "6.0.3",
-    "lucide-react": "1.17.0",
+    "lucide-react": "1.55.0",
     "qrcode-generator": "2.0.4",
     "react": "19.3.0",
     "react-dom": "19.3.0"
