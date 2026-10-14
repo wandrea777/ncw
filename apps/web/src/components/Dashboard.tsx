@@ -244,7 +244,7 @@ export function Dashboard({ me, onSignOut }: { me: Me; onSignOut(wipe: boolean):
               </>
             )}
             {tab === "activity" && <div className="full-list"><Activity items={(data?.items ?? []).slice(0, 200)} data={data} eur={eur} pending={pending} /></div>}
-            {tab === "tax" && <Tool disabled={false} initialAddresses={watched} />}
+            {tab === "tax" && <Tool disabled={false} initialAddresses={watched} premium />}
             {tab === "security" && <SecurityTab me={me} onToast={notify} />}
           </section>
         )}

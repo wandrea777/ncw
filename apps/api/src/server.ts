@@ -5,6 +5,7 @@ import { createPgDb, createPgliteDb } from "./db/db.ts";
 import { migrate, pendingMigrations } from "./db/migrate.ts";
 import { createPasskeyService } from "./auth/webauthn.ts";
 import { createApp } from "./app.ts";
+import { stripeProvider } from "./billing/provider.ts";
 
 const cfg = loadConfig();
 const db = cfg.databaseUrl ? createPgDb(cfg.databaseUrl) : await createPgliteDb(".data/pglite");
@@ -30,7 +31,7 @@ const clientIp = (c: Parameters<NonNullable<Parameters<typeof createApp>[0]["cli
   if (trustProxy === "1") return c.req.header("x-forwarded-for")?.split(",").at(-1)?.trim() || "unknown";
   return getConnInfo(c).remote.address ?? "unknown";
 };
-const app = createApp({ db, cfg, passkeys: createPasskeyService(cfg), clientIp });
+const app = createApp({ db, cfg, passkeys: createPasskeyService(cfg), clientIp, billing: cfg.stripe ? stripeProvider(cfg.stripe) : null });
 
 const server = serve({ fetch: app.fetch, port: cfg.port, hostname: cfg.env === "production" ? "0.0.0.0" : "127.0.0.1" }, (info) =>
   console.log(JSON.stringify({ msg: "NCW API gestart", env: cfg.env, port: info.port, db: cfg.databaseUrl ? "postgres" : "pglite" })),

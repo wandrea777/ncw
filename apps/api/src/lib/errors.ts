@@ -3,7 +3,7 @@ import { HTTPException } from "hono/http-exception";
 /** Fouten met een vaste, veilige code. Interne details gaan nooit naar de client. */
 export class ApiError extends HTTPException {
   readonly code: string;
-  constructor(status: 400 | 401 | 403 | 404 | 409 | 410 | 413 | 422 | 429, code: string, message: string) {
+  constructor(status: 400 | 401 | 403 | 404 | 409 | 410 | 413 | 422 | 429 | 503, code: string, message: string) {
     super(status, { message });
     this.code = code;
   }

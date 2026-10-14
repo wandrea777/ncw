@@ -32,3 +32,9 @@ Gevoelige acties vereisen een veld `stepUp: { challengeId, response }`. Haal eer
 | Systeem | `GET /health`, `GET /v1/openapi.json` |
 
 Foutformaat: `{ "error": { "code": "...", "message": "...", "requestId": "..." } }`.
+
+## Abonnement (ADR-0016)
+
+- `GET /v1/billing`: status (`enabled`, `premium`, `status`, `currentPeriodEnd`, `cancelAtPeriodEnd`).
+- `POST /v1/billing/checkout` en `POST /v1/billing/portal`: geven een `url` bij Stripe terug.
+- `POST /v1/billing/webhook`: alleen voor Stripe. Niet in de OpenAPI-spec; geauthenticeerd met `Stripe-Signature` in plaats van een sessie, en zonder Origin-controle.
