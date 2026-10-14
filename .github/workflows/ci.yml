@@ -1,9 +1,10 @@
-# Bij elke push en pull request: alle tests (ook tegen echte PostgreSQL), typecheck, build,
+# Bij elke push naar main en elke pull request: alle tests (ook tegen echte PostgreSQL), typecheck, build,
 # compliance, documentatie-check en SBOM. Zet "CI" als verplichte check op main.
 # Actions zijn vastgepind op commit-SHA (Dependabot werkt ze bij).
 name: CI
 on:
   push:
+    branches: [main] # anders twee runs met dezelfde check-naam "ci" per PR-commit
   pull_request:
 permissions:
   contents: read

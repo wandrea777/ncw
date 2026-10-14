@@ -10,6 +10,8 @@ Alle noemenswaardige wijzigingen. Formaat: [Keep a Changelog](https://keepachang
   - tag-rulesets op `v*`: alleen de beheerder maakt release-tags, niemand verplaatst of verwijdert ze;
   - secret scanning met push protection, Dependabot-securityupdates en private vulnerability reporting;
   - Actions: alleen actions van GitHub, SHA-pinning verplicht.
+- **CI:** draait bij een push alleen nog op `main` (plus elke PR), zodat er één check `ci` per PR-commit is. De API-tests hebben een timeout van 30 s, omdat de IDOR-test op PGlite in CI soms langer duurt dan 5 s.
+- **CRA-alarm:** security watch maakt eerst het issue en zet het incidentbestand daarna op een branch. De workflow-token maakt geen PR meer, want dat mag niet en zou geen CI starten ([QA](docs/qa/2026-10-14-github-en-hosting.md)).
 - **Hosting (ADR-0007, aanvulling):** de API draait in de testfase alleen lokaal in Docker. freevps.edu.pl is onderzocht en afgewezen (anonieme aanbieder, geen verwerkersovereenkomst mogelijk). Gratis alternatieven voor studenten staan in de ADR.
 
 ### Toegevoegd (2026-10-14)

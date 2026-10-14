@@ -10,3 +10,4 @@ Per review één bestand: `JJJJ-MM-DD-<onderwerp>.md` met per bevinding: **ernst
 | 2026-10-13 | [Lokale PostgreSQL-tests](2026-10-13-lokale-postgres-tests.md) | qa-reviewer |
 | 2026-10-13 | [KERN web-wallet en Vercel-hosting](2026-10-13-web-wallet.md) | qa-, security-, design-reviewer (3 rondes) |
 | 2026-10-14 | [Koopknop via partner, testaccount](2026-10-14-koopknop.md) | qa-, security-reviewer |
+| 2026-10-14 | [GitHub-beveiliging, hosting, CI en CRA-alarm](2026-10-14-github-en-hosting.md) | security-reviewer |
