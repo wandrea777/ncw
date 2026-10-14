@@ -31,6 +31,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci --ignore-scripts
+      # Supply chain: elk pakket moet een geldige registry-handtekening hebben (en attestaties kloppen).
+      - run: npm audit signatures
       - name: Tests (PGlite)
         run: npm test
       - name: API-tests tegen echte PostgreSQL

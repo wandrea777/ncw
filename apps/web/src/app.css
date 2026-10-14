@@ -167,7 +167,12 @@ summary { cursor: pointer; font-weight: 700; font-size: 12px; padding: 8px 0; co
 a.primary-cta { text-decoration: none; }
 
 /* Versturen met een hardware wallet (ADR-0015): dezelfde tokens als de overige dialogen. */
-.field-label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 0 0 7px; }
+.dialog .field-label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 0 0 7px; }
+/* .dialog p (0,1,1) won van .form-error (0,1,0): fouten in dialogen zagen eruit als gewone tekst. */
+.dialog .form-error { color: #8a2d20; font-size: 12px; margin: -6px 0 14px; }
+.dialog .text-button { min-height: 44px; }
+.dialog-step:focus { outline: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .steps { margin: 0 0 18px; padding-left: 20px; font-size: 13px; line-height: 1.7; color: var(--ink); }
 .dialog-actions { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .dialog-actions .primary-cta { flex: 1; }

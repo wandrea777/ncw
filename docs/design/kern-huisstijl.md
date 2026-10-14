@@ -46,6 +46,7 @@ Aanvullende kleuren in `app.css`, alleen voor status:
 | Adressenlijst en passkeylijst | nieuw | `.address-list`, `.address-row` |
 | Tabbalk op mobiel | nieuw | `.sidebar .side-nav` horizontaal onder 800px. In v0 verdwijnt de navigatie daar, waardoor tabbladen en uitloggen onbereikbaar waren. |
 | Box 3-rekenhulp als tabblad | nieuw | `.tool`, `.card`, `.kv` |
+| Versturen met een Ledger (stappen in één dialoog) | nieuw (ADR-0015) | `.dialog-step` (krijgt de focus bij elke stapwissel), `.steps`, `.dialog-actions`, `.dialog .field-label`, `.receive-own`, `.sr-only` (één vaste live region), `.kv` voor bedragen. Fouten: `.dialog .form-error`, direct onder het veld met `aria-describedby`. |
 
 ## Wat bewust anders is dan v0
 
@@ -61,10 +62,10 @@ Aanvullende kleuren in `app.css`, alleen voor status:
 | Biometric unlock / Recovery phrase backed up / App lock | Passkey-login, Sleutels (geen), Sessie (30 minuten) | Dat zijn de feiten op het web |
 | "Founding members · 248 places left", "KERN Private" | "Vroege toegang", "Box 3-overzicht · nu beschikbaar" | Geen nep-schaarste of beloftes |
 | "© 2026 KERN Europe B.V." | "© KERN" en links naar privacy, voorwaarden en beveiliging | De B.V. bestaat niet; juridische links zijn verplicht |
-| "LOCAL KEY STORAGE / CLEAR SIGNING / OPEN SOURCE CORE" | "Geen sleutels op onze server / passkey-login / alleen-lezen op het web" | Er is (nog) geen licentie en geen ondertekenen op het web |
+| "LOCAL KEY STORAGE / CLEAR SIGNING / OPEN SOURCE CORE" | "Geen sleutels op onze server / passkey-login / alleen-lezen op mainnet" | Er is (nog) geen licentie. Ondertekenen op het web kan alleen met een Ledger op testnet (ADR-0015). |
 | Taalknop zonder functie | Werkende NL/EN-knop, ook op mobiel in het dashboard | v0 verbergt hem daar |
 | "Your keys never leave your device" | "KERN never asks for your recovery phrase" | Op het web zijn er geen sleutels; dit is wat wél waar is |
-| p2: "Clear signing, transparent fees, human-readable approvals" | "Passkey sign-in, no passwords or SMS. A strict security policy in your browser and no trackers." | Ondertekenen bestaat nog niet |
+| p2: "Clear signing, transparent fees, human-readable approvals" | "Passkey sign-in, no passwords or SMS. A strict security policy in your browser and no trackers." | Ondertekenen bestaat alleen op testnet (ADR-0015); geen claim tot mainnet |
 | "Founding members get lifetime access to KERN Private…" / "Request an invitation" | Vroege toegang: wat er nu is en wat volgt / "Create your wallet" | Geen beloftes zonder mechanisme |
 | Referral-rij (niet klikbaar) | Klikbaar: "Passkey sign-in · No password, no SMS" opent "Maak je wallet" | Een pijl moet iets doen |
 | Dashboardvoet "Protected by KERN security architecture · v0.9.4 · Demo environment" | "Non-custodial: KERN stores no keys · versie (commit) · watch-only on mainnet" | Feiten in plaats van een claim |

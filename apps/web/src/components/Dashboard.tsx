@@ -27,6 +27,8 @@ import { useI18n, type Key } from "../i18n";
 import { Mark } from "./Mark";
 import { AddAddressDialog } from "./AddAddressDialog";
 import { ReceiveDialog } from "./ReceiveDialog";
+import { Dialog } from "./Dialog";
+import { LazyBoundary } from "./LazyBoundary";
 // Lui geladen: de Ledger- en transactiecode komt alleen binnen wie op Versturen klikt.
 const SendDialog = lazy(() => import("./SendDialog"));
 import { BuyDialog } from "./BuyDialog";
@@ -254,7 +256,13 @@ export function Dashboard({ me, onSignOut }: { me: Me; onSignOut(wipe: boolean):
 
       {dialog === "add" && <AddAddressDialog existing={watched} onClose={closeDialog} onAdd={(w) => (setWatched([...watched, w]), setDialog(null))} />}
       {dialog === "receive" && <ReceiveDialog watched={watched} onClose={closeDialog} onCopy={(a) => (setDialog(null), copy(a))} />}
-      {dialog === "send" && <Suspense fallback={null}><SendDialog watched={watched} onClose={closeDialog} /></Suspense>}
+      {dialog === "send" && (
+        <LazyBoundary onClose={closeDialog}>
+          <Suspense fallback={<Dialog title={t("send.title")} onClose={closeDialog}><p role="status">{t("send.loading")}</p></Dialog>}>
+            <SendDialog watched={watched} onClose={closeDialog} />
+          </Suspense>
+        </LazyBoundary>
+      )}
       {dialog === "buy" && <BuyDialog watched={watched} onClose={closeDialog} onCopy={copy} />}
       {toast && <div className="toast" role="status">{toast.ok ? <CheckCircle2 size={15} /> : <CircleAlert size={15} />} {toast.text}</div>}
     </main>

@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { HDKey } from "@scure/bip32";
-import { TEST_NETWORK, Transaction, p2wpkh } from "@scure/btc-signer";
+import { SigHash, TEST_NETWORK, Transaction, p2wpkh } from "@scure/btc-signer";
 import { base64, hex } from "@scure/base";
 import {
   ACCOUNT_PATH,
+  MAX_FEE_SATS,
+  MAX_SCAN_INDEX,
   SendError,
+  estimateVsize,
   accountDeriver,
   attachPrevTxs,
   broadcast,
@@ -144,7 +147,7 @@ describe("hardware wallet: account scannen", () => {
       const m = /\/address\/([a-z0-9]+)(\/utxo)?$/.exec(url)!;
       const used = usedReceive.has(m[1]!) || usedChange.has(m[1]!);
       const body = m[2]
-        ? [{ txid: "aa".repeat(32), vout: 1, value: 5000, status: { confirmed: m[1] !== derive(0, 2).address } }]
+        ? [{ txid: hex.encode(new TextEncoder().encode(m[1]!.slice(-32))), vout: 1, value: 5000, status: { confirmed: m[1] !== derive(0, 2).address } }]
         : { chain_stats: { tx_count: used ? 1 : 0 }, mempool_stats: { tx_count: 0 } };
       return new Response(JSON.stringify(body), { status: 200 });
     };
@@ -162,9 +165,28 @@ describe("hardware wallet: account scannen", () => {
     await expect(scanAccount(derive, { fetch: fake, delayMs: 0 })).rejects.toMatchObject({ code: "network" });
   });
 
+  it("stopt bij het plafond als de API elk adres gebruikt noemt (geen eindeloze lus)", async () => {
+    const fake = async (url: string) =>
+      new Response(JSON.stringify(url.endsWith("/utxo") ? [] : { chain_stats: { tx_count: 1 }, mempool_stats: { tx_count: 0 } }), { status: 200 });
+    await expect(scanAccount(derive, { fetch: fake, delayMs: 0 })).rejects.toMatchObject({ code: "scan-limit" });
+    expect(MAX_SCAN_INDEX).toBe(1000);
+  });
+
+  it("weigert kapotte UTXO-gegevens en ontdubbelt herhaalde UTXO's", async () => {
+    const utxoFor = (body: unknown[]) => async (url: string) =>
+      new Response(JSON.stringify(url.endsWith("/utxo") ? body : { chain_stats: { tx_count: url.includes(derive(0, 0).address) ? 1 : 0 }, mempool_stats: { tx_count: 0 } }), { status: 200 });
+    const good = { txid: "ab".repeat(32), vout: 0, value: 1000, status: { confirmed: true } };
+    for (const bad of [{ ...good, txid: "zz" }, { ...good, vout: -1 }, { ...good, value: 0 }, { ...good, value: 1.5 }]) {
+      await expect(scanAccount(derive, { fetch: utxoFor([bad]), gap: 2, delayMs: 0 })).rejects.toMatchObject({ code: "network" });
+    }
+    const s = await scanAccount(derive, { fetch: utxoFor([good, good]), gap: 2, delayMs: 0 });
+    expect(s.utxos).toHaveLength(1);
+    expect(s.confirmed).toBe(1000n);
+  });
+
   it("begrenst de aanbevolen netwerkvergoeding", async () => {
     const fake = async () => new Response(JSON.stringify({ fastestFee: 5000, halfHourFee: 2.2, hourFee: 0 }), { status: 200 });
-    expect(await fetchFeeRates(fake)).toEqual({ fast: 1000n, normal: 3n, slow: 1n });
+    expect(await fetchFeeRates(fake)).toEqual({ fast: 200n, normal: 3n, slow: 1n });
   });
 });
 
@@ -195,10 +217,18 @@ describe("hardware wallet: transactie bouwen en controleren", () => {
     const { state } = stateWith([[10_000n, true], [1_000_000n, false]]);
     const base = { account: ACCOUNT, state, recipient: OTHER, feeRate: 2n };
     expect(code(() => planSend({ ...base, amount: 20_000n }))).toBe("insufficient-funds");
-    expect(code(() => planSend({ ...base, amount: 5000n, feeRate: 1001n }))).toBe("fee-invalid");
+    expect(code(() => planSend({ ...base, amount: 5000n, feeRate: 201n }))).toBe("fee-invalid");
     expect(code(() => planSend({ ...base, amount: 5000n, feeRate: 0n }))).toBe("fee-invalid");
     expect(code(() => planSend({ ...base, amount: 545n }))).toBe("amount-too-small");
+    expect(code(() => planSend({ ...base, amount: 5000n, recipient: state.nextChange.address }))).toBe("address-own-change");
     expect(code(() => planSend({ ...base, amount: 5000n, recipient: "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4" }))).toBe("address-mainnet");
+  });
+
+  it("weigert een absolute vergoeding boven het plafond, ook bij een toegestaan tarief", () => {
+    const { state } = stateWith(Array.from({ length: 8 }, () => [30_000n, true] as [bigint, boolean]));
+    // ±7 invoer × ±68 vB × 200 sat/vB ≈ 95.000 sat > 50.000 sat.
+    expect(code(() => planSend({ account: ACCOUNT, state, recipient: OTHER, amount: 100_000n, feeRate: 200n }))).toBe("fee-too-high");
+    expect(code(() => planSend({ account: ACCOUNT, state, recipient: OTHER, amount: 100_000n, feeRate: 2n }))).toBe("geen fout");
   });
 
   it("de onafhankelijke controle vangt een extra uitvoer, een verkeerd bedrag en een te hoge vergoeding", () => {
@@ -211,16 +241,36 @@ describe("hardware wallet: transactie bouwen en controleren", () => {
       for (const [script, amount] of outs) t.addOutput({ script, amount });
       return t;
     };
-    const recipientScript = p2wpkh(hex.decode("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"), TEST_NETWORK).script;
+    const strangerScript = p2wpkh(hex.decode("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"), TEST_NETWORK).script;
     const toOther = hex.decode("0014751e76e8199196d454941c45d1b3a323f1433bd6"); // script van OTHER (BIP-173)
     expect(verifyPlan(make([[toOther, 50_000n], [change.script, 49_800n]]), want).fee).toBe(200n);
-    expect(code(() => verifyPlan(make([[toOther, 50_000n], [change.script, 49_000n], [recipientScript, 700n]]), want))).toBe("plan-mismatch");
+    expect(code(() => verifyPlan(make([[toOther, 50_000n], [change.script, 49_000n], [strangerScript, 700n]]), want))).toBe("plan-mismatch");
     expect(code(() => verifyPlan(make([[toOther, 49_999n], [change.script, 49_800n]]), want))).toBe("plan-mismatch");
     expect(code(() => verifyPlan(make([[toOther, 50_000n], [change.script, 10_000n]]), want))).toBe("plan-mismatch");
     expect(code(() => verifyPlan(make([[toOther, 25_000n], [toOther, 25_000n], [change.script, 49_800n]]), want))).toBe("plan-mismatch");
+    expect(code(() => verifyPlan(make([[toOther, 50_000n], [change.script, 25_000n], [change.script, 24_800n]]), want))).toBe("plan-mismatch");
+    expect(code(() => verifyPlan(make([[toOther, 50_000n], [change.script, 50_000n]]), want))).toBe("plan-mismatch"); // vergoeding 0
+    // Grens: precies vsize × tarief + 2000 mag, één sat meer niet.
+    const bound = BigInt(estimateVsize(1, 2)) * 2n + 2000n;
+    expect(verifyPlan(make([[toOther, 50_000n], [change.script, 50_000n - bound]]), want).fee).toBe(bound);
+    expect(code(() => verifyPlan(make([[toOther, 50_000n], [change.script, 50_000n - bound - 1n]]), want))).toBe("plan-mismatch");
+    // Invoer zonder bedrag kunnen we niet controleren.
+    const noAmount = new Transaction({ allowUnknownOutputs: true });
+    noAmount.addInput({ txid: hex.decode(state.utxos[0]!.txid), index: 0 });
+    noAmount.addOutput({ script: toOther, amount: 50_000n });
+    expect(code(() => verifyPlan(noAmount, want))).toBe("plan-mismatch");
+    expect(MAX_FEE_SATS).toBe(50_000n);
   });
 
-  it("weigert een vorige transactie die niet bij de invoer past (fee-aanval via een liegende API)", () => {
+  it("fee-aanval: de API liegt over het bedrag van een echte UTXO; de echte vorige transactie verraadt dat", () => {
+    const { state, raws } = stateWith([[60_000n, true]]);
+    // De API zegt 600.000 sat, de echte transactie (zelfde txid) bevat 60.000: de Ledger zou anders 540.000 sat vergoeding tekenen.
+    const lying: AccountState = { ...state, utxos: [{ ...state.utxos[0]!, value: 600_000n }], confirmed: 600_000n };
+    const plan = planSend({ account: ACCOUNT, state: lying, recipient: OTHER, amount: 500_000n, feeRate: 2n });
+    expect(code(() => attachPrevTxs(plan, raws))).toBe("utxo-mismatch");
+  });
+
+  it("weigert een vorige transactie die niet bij de invoer past (ander txid, ontbrekend, ongeldig)", () => {
     const { state, raws } = stateWith([[60_000n, true]]);
     const plan = () => planSend({ account: ACCOUNT, state, recipient: OTHER, amount: 10_000n, feeRate: 2n });
     const txid = state.utxos[0]!.txid;
@@ -271,15 +321,47 @@ describe("hardware wallet: handtekeningen verwerken en uitzenden", () => {
     expect(code(() => finalizeSigned(plan.psbt, [sigs[0]!, { ...sigs[1]!, inputIndex: 7 }]))).toBe("signature-mismatch");
   });
 
+  it("verifieert elke handtekening en eist SIGHASH_ALL", () => {
+    const plan = signedPlan();
+    const sigs = deviceSign(plan.psbt);
+    // Eén bit omgedraaid in de handtekening.
+    const flipped = new Uint8Array(sigs[1]!.signature);
+    flipped[10] = flipped[10]! ^ 1;
+    expect(code(() => finalizeSigned(plan.psbt, [sigs[0]!, { ...sigs[1]!, signature: flipped }]))).toBe("signature-mismatch");
+    // Een geldige handtekening van invoer 0, geplakt bij invoer 1 (zelfde sleutel kan niet, andere sighash): weigeren.
+    expect(code(() => finalizeSigned(plan.psbt, [sigs[0]!, { ...sigs[0]!, inputIndex: 1, pubkey: sigs[1]!.pubkey }]))).toBe("signature-mismatch");
+    // Echt ondertekend, maar met SIGHASH_NONE|ANYONECANPAY: dekt de uitvoer niet.
+    const tx = Transaction.fromPSBT(base64.decode(plan.psbt), { allowUnknownOutputs: true });
+    const none = SigHash.NONE_ANYONECANPAY;
+    const sigsNone: DeviceSignature[] = [];
+    for (let i = 0; i < tx.inputsLength; i++) {
+      const [, d] = tx.getInput(i).bip32Derivation![0]!;
+      tx.updateInput(i, { sighashType: none });
+      tx.signIdx(privFor(d.path[3] as 0 | 1, d.path[4]!), i, [none]);
+      const [pubkey, signature] = tx.getInput(i).partialSig![0]!;
+      sigsNone.push({ inputIndex: i, pubkey, signature });
+    }
+    expect(code(() => finalizeSigned(plan.psbt, sigsNone))).toBe("signature-mismatch");
+    expect(code(() => finalizeSigned(plan.psbt, sigs))).toBe("geen fout");
+  });
+
   it("zendt uit via mempool.space testnet4 en controleert het teruggegeven transactie-ID", async () => {
     const calls: Array<[string, RequestInit | undefined]> = [];
     const ok = (async (url: string, init?: RequestInit) => (calls.push([url, init]), new Response("ab".repeat(32)))) as typeof fetch;
     expect(await broadcast({ hex: "00", txid: "ab".repeat(32) }, ok)).toBe("ab".repeat(32));
     expect(calls[0]![0]).toBe("https://mempool.space/testnet4/api/tx");
     expect(calls[0]![1]?.method).toBe("POST");
-    const other = (async () => new Response("cd".repeat(32))) as typeof fetch;
-    await expect(broadcast({ hex: "00", txid: "ab".repeat(32) }, other)).rejects.toMatchObject({ code: "network" });
+    const signed = { hex: "00", txid: "ab".repeat(32) };
+    // Alleen een expliciete weigering is zeker "niet verstuurd"; al het andere is onzeker (niet opnieuw versturen).
     const refused = (async () => new Response("bad-txns", { status: 400 })) as typeof fetch;
-    await expect(broadcast({ hex: "00", txid: "ab".repeat(32) }, refused)).rejects.toMatchObject({ code: "network" });
+    await expect(broadcast(signed, refused)).rejects.toMatchObject({ code: "broadcast-rejected" });
+    const other = (async () => new Response("cd".repeat(32))) as typeof fetch;
+    await expect(broadcast(signed, other)).rejects.toMatchObject({ code: "broadcast-uncertain" });
+    const down = (async () => new Response("", { status: 503 })) as typeof fetch;
+    await expect(broadcast(signed, down)).rejects.toMatchObject({ code: "broadcast-uncertain" });
+    const offline = (async () => {
+      throw new TypeError("Failed to fetch");
+    }) as typeof fetch;
+    await expect(broadcast(signed, offline)).rejects.toMatchObject({ code: "broadcast-uncertain" });
   });
 });
