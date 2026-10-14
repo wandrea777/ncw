@@ -165,3 +165,13 @@ summary { cursor: pointer; font-weight: 700; font-size: 12px; padding: 8px 0; co
 .check { display: flex; gap: 10px; align-items: flex-start; font-size: 12px; color: var(--ink); margin: -2px 0 16px; cursor: pointer; }
 .check input { width: 20px; height: 20px; margin: 0; accent-color: var(--forest); flex-shrink: 0; }
 a.primary-cta { text-decoration: none; }
+
+/* Versturen met een hardware wallet (ADR-0015): dezelfde tokens als de overige dialogen. */
+.field-label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 0 0 7px; }
+.steps { margin: 0 0 18px; padding-left: 20px; font-size: 13px; line-height: 1.7; color: var(--ink); }
+.dialog-actions { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.dialog-actions .primary-cta { flex: 1; }
+.receive-own { margin: 14px 0 18px; font-size: 12px; }
+.receive-own summary { cursor: pointer; color: var(--forest); min-height: 44px; display: flex; align-items: center; }
+.receive-own .address-box { margin: 6px 0 10px; }
+.kv + .dialog-note, .kv + .primary-cta { margin-top: 16px; }

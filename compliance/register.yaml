@@ -10,27 +10,31 @@
 
 product:
   naam: "KERN Box 3-rekenhulp"
-  fase: 0  # 0 = read-only web-tool, 1 = wallet
-  beschrijving: "Web-wallet (alleen-lezen) met passkey-account: publieke BTC- en ETH-adressen volgen, saldi in EUR, transacties, en de box 3-rekenhulp. Geen sleutels; gevolgde adressen alleen op het apparaat; de server kent alleen naam, passkeys en sessies."
+  fase: 1  # 0 = read-only web-tool, 1 = wallet (web: ondertekenen alleen met hardware wallet, testnet)
+  beschrijving: "Web-wallet met passkey-account: publieke BTC- en ETH-adressen volgen, saldi in EUR, transacties, de box 3-rekenhulp, en Bitcoin versturen met een Ledger op testnet4 (ADR-0015). Geen sleutels in de browser of op de server; de transactie wordt in de browser gebouwd, op het apparaat ondertekend en rechtstreeks via mempool.space uitgezonden. Gevolgde adressen alleen op het apparaat; de server kent alleen naam, passkeys en sessies."
 
 verplichtingen:
   - id: MICA
     wet: "MiCA, Verordening (EU) 2023/1114"
     geldt: "nee"
-    waarom: "Geen cryptodienst (geen bewaring, ruil, orderdoorgifte, advies of portefeuillebeheer). Read-only rekenhulp. ⚖️"
+    waarom: "Geen cryptodienst (geen bewaring, ruil, orderdoorgifte, advies of portefeuillebeheer). Software voor een non-custodial wallet: de gebruiker ondertekent met een eigen hardware wallet, KERN kan geen geld verplaatsen (overweging 83). ⚖️"
     controls:
       - id: MICA-1
         type: auto
         check: geen-sleutelbibliotheken
-        beschrijving: "De web-app bevat geen bibliotheken voor sleutelbeheer of ondertekening (fase 0)."
+        beschrijving: "De browsercode maakt, bewaart of gebruikt nooit privésleutels: geen herstelzin- of hot-wallet-bibliotheken, geen privésleutel-API's in eigen code, Ledger-code alleen in lib/ledger.ts (ADR-0012, ADR-0015)."
       - id: MICA-3
         type: handmatig
         beschrijving: "Koopknop (ADR-0014): (1) de partner staat in het ESMA- of AFM-register met de dienst 'wisselen van crypto-activa tegen geld', en een vergunning uit een andere lidstaat (bijv. Ierland) heeft een geldige passport-notificatie voor Nederland; (2) het contract legt dienst, KYC en betaling bij de partner, en KERN geeft geen orders door; (3) de vergoeding is een omzetdeling uit de eigen fee van de partner, met opslag 0 voor de gebruiker; (4) entiteit en vergunning in ONRAMP_PARTNERS kloppen. Vóór activeren en daarna elk halfjaar."
         interval: 180
         laatstGecontroleerd: null
+      - id: MICA-4
+        type: auto
+        check: alleen-testnet
+        beschrijving: "Versturen werkt alleen op Bitcoin testnet4 met de Ledger-app 'Bitcoin Test', tot een onafhankelijke audit en de juridische toets (MICA-2) zijn afgerond (ADR-0012 volgorde, ADR-0015)."
       - id: MICA-2
         type: handmatig
-        beschrijving: "Juridische toets van de perimeter vóórdat een functie wordt toegevoegd die transacties maakt, doorstuurt of daaraan verdient."
+        beschrijving: "Juridische toets van de perimeter vóórdat een functie wordt toegevoegd die transacties maakt, doorstuurt of daaraan verdient. Versturen met een hardware wallet (ADR-0015) draait alleen op testnet zonder waarde; de toets is verplicht vóór mainnet (MICA-4)."
         interval: 365
         laatstGecontroleerd: null
 

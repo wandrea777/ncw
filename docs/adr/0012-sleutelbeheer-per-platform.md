@@ -24,7 +24,7 @@
   - *Verkeerd ontvangstadres / address poisoning:* het adres laten bevestigen op het scherm van de hardware wallet, begin en eind uitlichten, en waarschuwen bij lijkende adressen.
   - *Gecompromitteerde web-code bij ondertekenen met een hardware wallet:* het scherm van het apparaat is de laatste controle. Een strikte CSP en Trusted Types vóór de start van die fase.
 - **Gevolgen:**
-  - Check MICA-1 (`geen-sleutelbibliotheken`) blijft in fase 0 hard. Zodra stap 2 begint, vervangen we hem door een strengere control: "de web-bundle bevat geen code die sleutels genereert of opslaat".
+  - Check MICA-1 (`geen-sleutelbibliotheken`) blijft in fase 0 hard. Zodra stap 2 begint, vervangen we hem door een strengere control: "de web-bundle bevat geen code die sleutels genereert of opslaat". **Gedaan op 14-10-2026 met [ADR-0015](0015-versturen-met-ledger-web.md)**, samen met Trusted Types in de CSP en control MICA-4 (alleen testnet).
   - Geen dApp-browser, WalletConnect, swaps of staking in de MVP (PLAN.md §4). Swaps komen alleen via een partner met vergunning.
 - **Alternatieven:**
   - Een versleutelde herstelzin in de browser (MetaMask-model): verworpen vanwege het risico voor alle gebruikers tegelijk.

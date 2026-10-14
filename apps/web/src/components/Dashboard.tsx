@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowDownLeft,
   ArrowLeftRight,
@@ -26,7 +26,9 @@ import { CheckCircle2, CircleAlert } from "lucide-react";
 import { useI18n, type Key } from "../i18n";
 import { Mark } from "./Mark";
 import { AddAddressDialog } from "./AddAddressDialog";
-import { ReceiveDialog, SendDialog } from "./ReceiveDialog";
+import { ReceiveDialog } from "./ReceiveDialog";
+// Lui geladen: de Ledger- en transactiecode komt alleen binnen wie op Versturen klikt.
+const SendDialog = lazy(() => import("./SendDialog"));
 import { BuyDialog } from "./BuyDialog";
 import { Tool } from "../pages/Tool";
 import { usePortfolio, type Portfolio } from "../lib/usePortfolio";
@@ -252,7 +254,7 @@ export function Dashboard({ me, onSignOut }: { me: Me; onSignOut(wipe: boolean):
 
       {dialog === "add" && <AddAddressDialog existing={watched} onClose={closeDialog} onAdd={(w) => (setWatched([...watched, w]), setDialog(null))} />}
       {dialog === "receive" && <ReceiveDialog watched={watched} onClose={closeDialog} onCopy={(a) => (setDialog(null), copy(a))} />}
-      {dialog === "send" && <SendDialog onClose={closeDialog} />}
+      {dialog === "send" && <Suspense fallback={null}><SendDialog watched={watched} onClose={closeDialog} /></Suspense>}
       {dialog === "buy" && <BuyDialog watched={watched} onClose={closeDialog} onCopy={copy} />}
       {toast && <div className="toast" role="status">{toast.ok ? <CheckCircle2 size={15} /> : <CircleAlert size={15} />} {toast.text}</div>}
     </main>

@@ -4,6 +4,27 @@ Alle noemenswaardige wijzigingen. Formaat: [Keep a Changelog](https://keepachang
 
 ## [Onvoltooid]
 
+### Toegevoegd (2026-10-14, versturen met een Ledger)
+- **Bitcoin versturen met een Ledger in de browser, alleen op testnet4** (ADR-0015, stap 2 uit ADR-0012):
+  - WebHID met de app "Bitcoin Test". De sleutel blijft op het apparaat; de gebruiker controleert ontvanger, bedrag en vergoeding op het scherm.
+  - De browser zoekt het BIP-84-account (gap-limiet 20) en bouwt de PSBT met `@scure/btc-signer`. Hij controleert het plan onafhankelijk (`verifyPlan`) en de vorige transacties (txid en bedrag), verwerkt alleen de handtekeningen van de genoemde sleutels, en zendt rechtstreeks via mempool.space uit. De KERN-server ziet niets en er wordt niets bewaard.
+  - Mainnet-adressen, `xpub` en de Ledger-app "Bitcoin" worden geweigerd. Alleen bevestigde UTXO's worden uitgegeven. Eigen afleiding en apparaat worden vergeleken. Er is een waarschuwing tegen lijkende adressen (address poisoning).
+  - Een eigen ontvangstadres kun je tonen op het scherm van de Ledger.
+  - De Ledger- en transactiecode wordt lui geladen.
+- Nieuwe dependencies (motivatie in ADR-0015): `@scure/btc-signer`, `@scure/bip32`, `@ledgerhq/ledger-bitcoin`, `@ledgerhq/hw-transport-webhid`, `buffer`.
+- Tests: rekenkern (BIP-84-testvector, invoer, scannen, plan, vorige transacties, handtekeningen, uitzenden), Ledger-koppeling (versies, foutcodes, apparaatkeuze) en de MICA-1-regels.
+- Runbook `docs/runbooks/testen.md` §5: testen met een echte Ledger op testnet4.
+
+### Gewijzigd (2026-10-14, versturen met een Ledger)
+- **CSP met Trusted Types** (`require-trusted-types-for 'script'; trusted-types 'none'`) en `Permissions-Policy: hid=(self)`. Gecontroleerd op de productie-build: geen overtredingen.
+- **Control MICA-1 vervangen** door de strengere variant uit ADR-0012:
+  - geen herstelzin- of hot-wallet-bibliotheken;
+  - geen privésleutel-API's in eigen code;
+  - Ledger-code alleen in `lib/ledger.ts`.
+- Nieuwe control **MICA-4** (`alleen-testnet`). Het register staat op fase 1. MICA-2 (juridische toets) is verplicht vóór mainnet.
+- Privacyverklaring en `third-parties.json`: wat mempool.space ziet bij versturen.
+- `withRetry` is generiek (behoudt het type van de fetch-functie).
+
 ### Gewijzigd (2026-10-14, GitHub en hosting)
 - **GitHub-beveiliging aan** ([runbook](docs/runbooks/github-beveiligen.md)):
   - branch protection op `main` (PR en check `ci` verplicht, ook voor beheerders, lineaire historie, geen force-push);

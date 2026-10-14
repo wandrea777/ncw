@@ -58,13 +58,3 @@ export function ReceiveDialog({ watched, onClose, onCopy }: { watched: WatchedAd
     </Dialog>
   );
 }
-
-export function SendDialog({ onClose }: { onClose(): void }) {
-  const { t } = useI18n();
-  return (
-    <Dialog title={t("send.title")} onClose={onClose}>
-      <p><span className="badge-line">{t("send.status")}</span></p>
-      <p>{t("send.text")}</p>
-    </Dialog>
-  );
-}
