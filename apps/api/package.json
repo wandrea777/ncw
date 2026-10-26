@@ -18,7 +18,7 @@
     "@types/node": "26.6.5",
     "@types/pg": "8.23.1",
     "typescript": "7.0.2",
-    "vitest": "5.0.4"
+    "vitest": "5.0.5"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.5.9",
