@@ -3,6 +3,6 @@
   "private": true,
   "description": "Vastgepinde Vercel CLI voor release en noodstop (eigen lockfile, installeren met --ignore-scripts). Alleen versies die minstens 7 dagen oud zijn.",
   "dependencies": {
-    "vercel": "62.4.0"
+    "vercel": "64.5.0"
   }
 }
